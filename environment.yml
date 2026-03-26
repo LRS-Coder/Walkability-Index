@@ -1,0 +1,10 @@
+name: walkability
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - osmnx
+  - networkx
+  - geopandas
+  - folium
