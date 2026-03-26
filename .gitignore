@@ -175,6 +175,9 @@ cython_debug/
 .idea/**/dictionaries
 .idea/**/shelf
 
+# OSMnx
+cache/**/*.json
+
 # Abstra
 # Abstra is an AI-powered process automation framework.
 # Ignore directories containing user credentials, local state, and settings.
