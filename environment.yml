@@ -8,3 +8,4 @@ dependencies:
   - networkx
   - geopandas
   - folium
+  - pyproj
