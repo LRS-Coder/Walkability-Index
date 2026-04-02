@@ -1,5 +1,7 @@
 # import modules
 import os
+
+import folium
 import osmnx as ox
 import tempfile
 import webbrowser
@@ -21,7 +23,9 @@ def osm_download_confirm():
             temp_path = tf.name
 
         # plot boundary on map
-        m = boundary.explore(color='black')
+        m = boundary.explore(color='black',tiles='CartoDB positron')
+        folium.TileLayer('Esri WorldImagery').add_to(m)
+        folium.LayerControl().add_to(m)
         m.save(temp_path)
 
         # display boundary plot in browser and ask whether boundary is satisfactory
