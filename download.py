@@ -15,8 +15,13 @@ def osm_download_confirm():
         # user inputs a location
         location = input("Enter a location (e.g. Paris, France): ")
 
-        # download boundary
-        boundary = ox.geocode_to_gdf(location)
+        try:
+            # download boundary
+            boundary = ox.geocode_to_gdf(location)
+
+        except Exception:
+            print("Could not locate the boundary. Please try again.")
+            continue
 
         # create a temporary file to for folium image
         with tempfile.NamedTemporaryFile(delete=False, suffix='.html') as tf:
