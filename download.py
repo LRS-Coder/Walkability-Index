@@ -23,8 +23,9 @@ def osm_download_confirm():
             temp_path = tf.name
 
         # plot boundary on map
-        m = boundary.explore(color='black',tiles='CartoDB positron')
-        folium.TileLayer('Esri WorldImagery').add_to(m)
+        m = boundary.explore(color='black',tiles=None,name=location)
+        folium.TileLayer(tiles='CartoDB positron', name='Light Map (CartoDB').add_to(m)
+        folium.TileLayer(tiles='Esri WorldImagery',name='Satellite (Esri)').add_to(m)
         folium.LayerControl().add_to(m)
         m.save(temp_path)
 
