@@ -41,7 +41,7 @@ def osm_download_confirm():
         # user inputs a location
         location = input("Enter a location (e.g. Paris, France): ")
 
-        # OpenstreetMap boundary
+        # OpenStreetMap boundary
         if method == "1":
 
             try:
@@ -121,7 +121,7 @@ def osm_download_confirm():
             if satisfactory in ['y','yes']:
                 print('User is satisfied with the boundary.')
                 osm_download_all(location, download_boundary)
-                print('Succesfully downloaded all files')
+                print('Successfully downloaded all files')
                 break
             elif satisfactory in ['n','no']:
                 print('User is NOT satisfied with the boundary.')
@@ -133,16 +133,16 @@ def osm_download_confirm():
         # delete the temporary file
         os.remove(temp_path)
 
-# define function for downloading from all required data from OpenStreetMaps
-def osm_download_all(location, folder="data"):
+# define function for downloading from all required data from OpenStreetMap
+def osm_download_all(location, boundary, folder="data"):
 
     # formats the location name for use a filename
     location_filename = location.replace(",", "").replace(" ", "_")
 
     # download buildings, amenities, and walking network
-    buildings = ox.features_from_place(location, tags = {"building": True})
-    amenities = ox.features_from_place(location, tags = {"amenity": True})
-    network = ox.graph.graph_from_place(location, network_type = "walk")
+    buildings = ox.features_from_polygon(boundary, tags = {"building": True})
+    amenities = ox.features_from_polygon(boundary, tags = {"amenity": True})
+    network = ox.graph.graph_from_polygon(boundary, network_type = "walk")
 
     # project to appropriate crs and save data
     # define target crs from network for buildings and amenities to match
