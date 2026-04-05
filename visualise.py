@@ -47,7 +47,7 @@ amenity_to_group = {amenity:group
                     for amenity in amenities}
 
 # map amenities and only keep amenities with an assigned group
-amenities['group'] = amenities['amenity'] = amenities['amenity'].str.lower().map(amenity_to_group)
+amenities['group'] = amenities['amenity'].str.lower().map(amenity_to_group)
 amenities_to_plot = amenities[amenities['group'].notna()]
 
 # assign icons to amenities based on their group
