@@ -35,8 +35,9 @@ print(amenities['amenity'].value_counts())
 amenity_groups = {
     'education': ['school','outdoor_education_centre'],
     'food_drink': ['fast_food','restaurant','cafe','pub','bar'],
+    'groceries': ['small_supermarket','medium_supermarket','large_supermarket','hypermarket'],
     'postal': ['post_office','post_box'],
-    'banking': ['atm'],
+    'banking': ['atm','bank'],
     'religion': ['place_of_worship'],
     'entertainment': ['community_centre']
 }
@@ -54,6 +55,7 @@ amenities_to_plot = amenities[amenities['group'].notna()]
 icons_dictionary = {
     'education': ('blue', 'book'),
     'food_drink': ('lightgray', 'cutlery'),
+    'groceries': ('gray', 'shopping-cart'),
     'postal': ('pink', 'envelope'),
     'banking': ('red', 'credit-card'),
     'religion': ('orange', 'star'),

@@ -57,6 +57,9 @@
 { "type": "Feature", "properties": { "id": 1074493750, "name": "Market Square", "amenity": "cafe" }, "geometry": { "type": "Point", "coordinates": [ -6.523140162683788, 55.206049594015234 ] } },
 { "type": "Feature", "properties": { "id": 1187591050, "name": null, "amenity": "fuel" }, "geometry": { "type": "Point", "coordinates": [ -6.523559918378795, 55.20807536080747 ] } },
 { "type": "Feature", "properties": { "id": 1187628341, "name": null, "amenity": "parking" }, "geometry": { "type": "Point", "coordinates": [ -6.520197861884716, 55.201391625779742 ] } },
-{ "type": "Feature", "properties": { "id": 1187635422, "name": null, "amenity": "parking" }, "geometry": { "type": "Point", "coordinates": [ -6.523430998604172, 55.206703488801978 ] } }
+{ "type": "Feature", "properties": { "id": 1187635422, "name": null, "amenity": "parking" }, "geometry": { "type": "Point", "coordinates": [ -6.523430998604172, 55.206703488801978 ] } },
+{ "type": "Feature", "properties": { "id": 1010018097, "name": "Spar - Bushmills", "amenity": "small_supermarket" }, "geometry": { "type": "Point", "coordinates": [ -6.52197861476696, 55.201411213672174 ] } },
+{ "type": "Feature", "properties": { "id": 1010009471, "name": "Co-op Bushmills", "amenity": "small_supermarket" }, "geometry": { "type": "Point", "coordinates": [ -6.524024260682051, 55.206634641942237 ] } },
+{ "type": "Feature", "properties": { "id": 1010023906, "name": "Centra Bushmills", "amenity": "small_supermarket" }, "geometry": { "type": "Point", "coordinates": [ -6.523325983776355, 55.206296647656949 ] } }
 ]
 }
