@@ -144,21 +144,31 @@ def osm_download_all(location, boundary, folder="data"):
     amenities = ox.features_from_polygon(boundary, tags = {"amenity": True})
     network = ox.graph.graph_from_polygon(boundary, network_type = "walk")
 
-    # project to appropriate crs and save data
-    # define target crs from network for buildings and amenities to match
+    # drop unnecessary columns (requires flattening)
+    buildings = buildings.reset_index()[['id','building','geometry']]
+    amenities = amenities.reset_index()[['id','name','amenity','geometry']]
+
+    # define target crs from network to accurately calculate the centre of amenities
     network_proj = ox.project_graph(network)
     target_crs = network_proj.graph['crs']
-    # convert crs of buildings and amenities to match network
-    buildings_proj = buildings.to_crs(target_crs)
-    amenities_proj = amenities.to_crs(target_crs)
+
+    # convert crs of amenities to match network
+    amenities = amenities.to_crs(target_crs)
+
+    # convert all amenities to nodes
+    amenities['geometry'] = amenities.geometry.centroid
+
+    # convert crs of amenities back to epsg_4326
+    amenities = amenities.to_crs(epsg=4326)
+
     # save buildings
     buildings_file = os.path.join(folder, f"{location_filename}_buildings.geojson")
-    buildings_proj.to_file(buildings_file, driver = "GeoJSON")
+    buildings.to_file(buildings_file, driver = "GeoJSON")
     # save amenities
     amenities_file = os.path.join(folder, f"{location_filename}_amenities.geojson")
-    amenities_proj.to_file(amenities_file, driver = "GeoJSON")
+    amenities.to_file(amenities_file, driver = "GeoJSON")
     # save walking network
     network_file = os.path.join(folder, f"{location_filename}_network.graphml")
-    ox.save_graphml(network_proj, network_file)
+    ox.save_graphml(network, network_file)
 
 osm_download_confirm()
