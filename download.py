@@ -151,14 +151,16 @@ def osm_download_all(location, boundary, folder="data"):
     # formats the location name for use a filename
     location_filename = location.replace(",", "").replace(" ", "_")
 
-    # download buildings, amenities, and walking network
+    # download buildings, amenities (including leisure), and walking network
     buildings = ox.features_from_polygon(boundary, tags = {"building": True})
-    amenities = ox.features_from_polygon(boundary, tags = {"amenity": True})
+    amenities = ox.features_from_polygon(boundary, tags = {"amenity": True, "leisure": True})
     network = ox.graph.graph_from_polygon(boundary, network_type = "walk")
 
-    # drop unnecessary columns (requires flattening)
+    # drop unnecessary columns including filling empty amenity column with leisure column (requires flattening)
     buildings = buildings.reset_index()[['id','building','geometry']]
-    amenities = amenities.reset_index()[['id','name','amenity','geometry']]
+    amenities = amenities.reset_index()
+    amenities['amenity'] = amenities['amenity'].fillna(amenities['leisure'])
+    amenities = amenities[['id','name','amenity','geometry']]
 
     # define target crs from network to accurately calculate the centre of amenities
     network_proj = ox.project_graph(network)

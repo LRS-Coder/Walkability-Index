@@ -20,26 +20,32 @@ def add_amenity_markers(row, map_name, icons_dictionary):
 
     # add amenity with marker based on its grouping
     color, icon = icons_dictionary[row.group]
-    folium.Marker(location=coords, popup=row.amenity, icon=folium.Icon(color=color, icon=icon)).add_to(map_name)
+    folium.Marker(location=coords, popup=row.amenity, icon=folium.Icon(color=color, icon=icon, prefix='fa')).add_to(map_name)
 
 # read data files
-amenities = gpd.read_file('data/Bushmills_Northern_Ireland_amenities.geojson')
-buildings = gpd.read_file('data/Bushmills_Northern_Ireland_buildings.geojson')
-network = ox.load_graphml('data/Bushmills_Northern_Ireland_network.graphml')
+amenities = gpd.read_file('data/Coleraine_Northern_Ireland_amenities.geojson')
+buildings = gpd.read_file('data/Coleraine_Northern_Ireland_buildings.geojson')
+network = ox.load_graphml('data/Coleraine_Northern_Ireland_network.graphml')
 nodes, edges = ox.graph_to_gdfs(network)
 
 # lists all different types of amenities
-print(amenities['amenity'].value_counts())
+print(amenities['amenity'].value_counts().to_string())
 
 # define amenity groups
 amenity_groups = {
-    'education': ['school','outdoor_education_centre'],
-    'food_drink': ['fast_food','restaurant','cafe','pub','bar'],
-    'groceries': ['small_supermarket','medium_supermarket','large_supermarket','hypermarket'],
-    'postal': ['post_office','post_box'],
+    'education': ['school','outdoor_education_centre','college','university','kindergarden'],
+    'food_drink': ['fast_food','restaurant','cafe','pub','bar','ice_cream','vending_machine'],
+    'groceries': ['small_supermarket','medium_supermarket','large_supermarket','hypermarket','marketplace'],
+    'postal': ['post_office','post_box','post_depot'],
     'banking': ['atm','bank'],
     'religion': ['place_of_worship'],
-    'entertainment': ['community_centre']
+    'entertainment': ['community_centre','casino','concert_hall','cinema','theatre','library','tanning_salon',
+                      'adult_gaming_centre','trampoline_park','bowling_alley','miniature_golf','sports_centre',
+                      'fitness_centre','marina','indoor_play'],
+    'healthcare': ['dentist','pharmacy','doctors','clinic'],
+    'public_services': ['fire_station','police','townhall','courthouse'],
+    'public_transport': ['taxi','bus_station'],
+    'greenspace': ['pitch','park','playground','garden','track','firepit','grave_yard']
 }
 
 # assign group to amenities
@@ -59,7 +65,11 @@ icons_dictionary = {
     'postal': ('pink', 'envelope'),
     'banking': ('red', 'credit-card'),
     'religion': ('orange', 'star'),
-    'entertainment': ('purple', 'film')
+    'entertainment': ('purple', 'film'),
+    'healthcare': ('lightgreen', 'medkit'),
+    'public_services': ('lightblue', 'globe'),
+    'public_transport': ('black', 'bus'),
+    'greenspace': ('green', 'tree')
 }
 
 # convert data crs into epsg:4326 for folium
