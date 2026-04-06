@@ -162,6 +162,9 @@ def osm_download_all(location, boundary, folder="data"):
     amenities['amenity'] = amenities['amenity'].fillna(amenities['leisure'])
     amenities = amenities[['id','name','amenity','geometry']]
 
+    # remove amenities from OpenStreetmaps which will clash with Geolytix (bank) and Translink (bus_station) data
+    amenities = amenities[~amenities['amenity'].isin(['bank','bus_station'])]
+
     # define target crs from network to accurately calculate the centre of amenities
     network_proj = ox.project_graph(network)
     target_crs = network_proj.graph['crs']
@@ -175,32 +178,53 @@ def osm_download_all(location, boundary, folder="data"):
     # convert crs of amenities back to epsg_4326
     amenities = amenities.to_crs(epsg=4326)
 
-    # load bank and supermarket data
+    # load bank, supermarket, bus stop, and station data
     banks = pd.read_csv("data/geolytix_uk_open_bank_branches.csv")
     supermarkets = pd.read_csv("data/geolytix_retailpoints_v40_202601.csv")
+    bus_stops = pd.read_csv("data/Bus stop export 20260108.csv")
+    stations = pd.read_csv("data/translink-stationsni.csv")
 
-    # create geodataframes for bank and supermarket data and set the geometry using points_from_xy
+    # create geodataframes for bank, supermarket, bus stop, and station data and set the geometry using points_from_xy
     banks_gdf = gpd.GeoDataFrame(banks,
                                 geometry=gpd.points_from_xy(banks['long_wgs84'], banks['lat_wgs84']),
                                 crs='epsg:4326')
     supermarkets_gdf = gpd.GeoDataFrame(supermarkets,
                                 geometry=gpd.points_from_xy(supermarkets['long_wgs'], supermarkets['lat_wgs']),
                                 crs='epsg:4326')
+    bus_stops_gdf = gpd.GeoDataFrame(bus_stops,
+                                geometry=gpd.points_from_xy(bus_stops['Longitude'], bus_stops['Latitude']),
+                                crs='epsg:4326')
+    stations_gdf = gpd.GeoDataFrame(stations,
+                                geometry=gpd.points_from_xy(stations['Easting'], stations['Northing']),
+                                crs='epsg:29903').to_crs(epsg=4326) # epsg:29903 is TM75 Irish Grid
 
-    # only keep bank and supermarket data within the desired boundry
+    # only keep bank, supermarket, bus stop, and station data within the desired boundry
     banks_gdf = banks_gdf[banks_gdf.geometry.within(boundary)]
     supermarkets_gdf = supermarkets_gdf[supermarkets_gdf.geometry.within(boundary)]
+    bus_stops_gdf = bus_stops_gdf[bus_stops_gdf.geometry.within(boundary)]
+    stations_gdf = stations_gdf[stations_gdf.geometry.within(boundary)]
 
-    # complete bank and supermarket columns to match OpenStreetMap data
+    # complete bank, supermarket, bus stop, and station columns to match OpenStreetMap data
     banks_gdf = banks_gdf.rename(columns ={'branch_name':'name'})
     banks_gdf['amenity'] = 'bank'
     supermarkets_gdf = supermarkets_gdf.rename(columns ={'store_name':'name'})
     supermarkets_gdf['amenity'] = supermarkets_gdf['size_band'].apply(assign_supermarket_amenity)
+    bus_stops_gdf = bus_stops_gdf.rename(columns={'CommonName': 'name','AtcoCode':'id'})
+    bus_stops_gdf['amenity'] = 'bus_stop'
+    stations_gdf = stations_gdf.rename(columns ={'Station':'name','ID':'id'})
+    stations_gdf['name'] = stations_gdf['name'].str.title()
+    stations_gdf['amenity'] = stations_gdf['Type'].map({
+        'R': 'train_station',
+        'B': 'bus_station',
+        'I': 'train_and_bus_station'
+        })
 
     # combine amenities data with banks and supermarkets data
     amenities = pd.concat([amenities[['id','name','amenity','geometry']],
                            banks_gdf[['id','name','amenity','geometry']],
-                           supermarkets_gdf[['id','name','amenity','geometry']]],
+                           supermarkets_gdf[['id','name','amenity','geometry']],
+                           bus_stops_gdf[['id','name','amenity','geometry']],
+                           stations_gdf[['id','name','amenity','geometry']]],
                           ignore_index=True)
 
     # save buildings

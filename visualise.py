@@ -44,8 +44,8 @@ amenity_groups = {
                       'fitness_centre','marina','indoor_play'],
     'healthcare': ['dentist','pharmacy','doctors','clinic'],
     'public_services': ['fire_station','police','townhall','courthouse'],
-    'public_transport': ['taxi','bus_station'],
-    'greenspace': ['pitch','park','playground','garden','track','firepit','grave_yard']
+    'public_transport': ['taxi','bus_stop','bus_station','train_station','train_and_bus_station'],
+    'dedicated_greenspace': ['pitch','park','playground','garden','track','firepit','grave_yard']
 }
 
 # assign group to amenities
@@ -69,7 +69,7 @@ icons_dictionary = {
     'healthcare': ('lightgreen', 'medkit'),
     'public_services': ('lightblue', 'globe'),
     'public_transport': ('black', 'bus'),
-    'greenspace': ('green', 'tree')
+    'dedicated_greenspace': ('green', 'tree')
 }
 
 # convert data crs into epsg:4326 for folium
