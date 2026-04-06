@@ -4,6 +4,7 @@ import folium
 import osmnx as ox
 import tempfile
 import webbrowser
+import pandas as pd
 import geopandas as gpd
 
 # define function for adding amenity markers to a folium map
@@ -18,9 +19,19 @@ def add_amenity_markers(row, map_name, icons_dictionary):
     else:
         coords = [geom.centroid.y, geom.centroid.x]
 
+    # store name and amenity
+    name = row['name']
+    amenity = row['amenity']
+
+    # popup will display both name and amenity information in title case if a name exists otherwise only amenity information
+    if pd.notna(name):
+        popup_text = f"Name: {name.title()}<br>Amenity Type: {amenity.replace('_', ' ').title()}"
+    else:
+        popup_text = f"Amenity Type: {amenity.replace('_', ' ').title()}"
+
     # add amenity with marker based on its grouping
     color, icon = icons_dictionary[row.group]
-    folium.Marker(location=coords, popup=row.amenity, icon=folium.Icon(color=color, icon=icon, prefix='fa')).add_to(map_name)
+    folium.Marker(location=coords, popup=folium.Popup(popup_text,max_width=250), icon=folium.Icon(color=color, icon=icon, prefix='fa')).add_to(map_name)
 
 # read data files
 amenities = gpd.read_file('data/Coleraine_Northern_Ireland_amenities.geojson')
