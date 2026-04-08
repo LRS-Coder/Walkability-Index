@@ -89,7 +89,7 @@ buildings_to_plot = buildings.to_crs(epsg=4326)
 edges_to_plot = edges.to_crs(epsg=4326)
 
 # plot buildings onto a folium map
-m = folium.Map(location=[buildings.geometry.centroid.to_crs(epsg=4326).y.mean(),buildings.geometry.centroid.to_crs(epsg=4326).x.mean()], tiles=None)
+m = folium.Map(location=[buildings.geometry.centroid.to_crs(epsg=4326).y.mean(),buildings.geometry.centroid.to_crs(epsg=4326).x.mean()], tiles=None, control_scale=True)
 bg = folium.FeatureGroup(name='Buildings', show=True)
 folium.GeoJson(buildings_to_plot[['id','geometry']],style_function=lambda feature: {"color": "darkred"}).add_to(bg)
 bg.add_to(m)
