@@ -88,8 +88,14 @@ amenities_to_plot = amenities_to_plot.to_crs(epsg=4326)
 buildings_to_plot = buildings.to_crs(epsg=4326)
 edges_to_plot = edges.to_crs(epsg=4326)
 
+# calculate bounds of the map
+minx, miny, maxx, maxy = buildings_to_plot.total_bounds
+
+# create folium map with scale bar which is centred on and zoomed into the desired region
+m = folium.Map(location=[(miny + maxy)/2,(minx + maxx)/2], tiles=None, control_scale=True)
+m.fit_bounds([[miny,minx],[maxy,maxx]])
+
 # plot buildings onto a folium map
-m = folium.Map(location=[buildings.geometry.centroid.to_crs(epsg=4326).y.mean(),buildings.geometry.centroid.to_crs(epsg=4326).x.mean()], tiles=None, control_scale=True)
 bg = folium.FeatureGroup(name='Buildings', show=True)
 folium.GeoJson(buildings_to_plot[['id','geometry']],style_function=lambda feature: {"color": "darkred"}).add_to(bg)
 bg.add_to(m)
