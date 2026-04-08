@@ -7,14 +7,14 @@ import webbrowser
 import pandas as pd
 import geopandas as gpd
 
-# define function for adding amenity markers to a folium map
-def add_amenity_markers(row, map_name, icons_dictionary):
+# define function for adding amenity markers to a folium map as groups
+def add_amenity_markers(row, amenity_groups, icons_dictionary):
 
     # assign geometry of point, polygon, or line to geom
     geom = row.geometry
 
     # extract coordinates from geom
-    if geom.geom_type == 'Point':
+    if geom.geom_type == 'Point': # all amenities should already be Points
         coords = [geom.y,geom.x]
     else:
         coords = [geom.centroid.y, geom.centroid.x]
@@ -31,7 +31,7 @@ def add_amenity_markers(row, map_name, icons_dictionary):
 
     # add amenity with marker based on its grouping
     color, icon = icons_dictionary[row.group]
-    folium.Marker(location=coords, popup=folium.Popup(popup_text,max_width=250), icon=folium.Icon(color=color, icon=icon, prefix='fa')).add_to(map_name)
+    folium.Marker(location=coords, popup=folium.Popup(popup_text,max_width=250), icon=folium.Icon(color=color, icon=icon, prefix='fa')).add_to(amenity_groups[row['group']])
 
 # read data files
 amenities = gpd.read_file('data/Coleraine_Northern_Ireland_amenities.geojson')
@@ -44,19 +44,19 @@ print(amenities['amenity'].value_counts().to_string())
 
 # define amenity groups
 amenity_groups = {
-    'education': ['school','outdoor_education_centre','college','university','kindergarden'],
-    'food_drink': ['fast_food','restaurant','cafe','pub','bar','ice_cream','vending_machine'],
-    'groceries': ['small_supermarket','medium_supermarket','large_supermarket','hypermarket','marketplace'],
-    'postal': ['post_office','post_box','post_depot'],
-    'banking': ['atm','bank'],
-    'religion': ['place_of_worship'],
-    'entertainment': ['community_centre','casino','concert_hall','cinema','theatre','library','tanning_salon',
+    'Education': ['school','outdoor_education_centre','college','university','kindergarden'],
+    'Food & Drink': ['fast_food','restaurant','cafe','pub','bar','ice_cream','vending_machine'],
+    'Groceries': ['small_supermarket','medium_supermarket','large_supermarket','hypermarket','marketplace'],
+    'Postal': ['post_office','post_box','post_depot'],
+    'Banking': ['atm','bank'],
+    'Religion': ['place_of_worship'],
+    'Entertainment': ['community_centre','casino','concert_hall','cinema','theatre','library','tanning_salon',
                       'adult_gaming_centre','trampoline_park','bowling_alley','miniature_golf','sports_centre',
                       'fitness_centre','marina','indoor_play'],
-    'healthcare': ['dentist','pharmacy','doctors','clinic'],
-    'public_services': ['fire_station','police','townhall','courthouse'],
-    'public_transport': ['taxi','bus_stop','bus_station','train_station','train_and_bus_station'],
-    'dedicated_greenspace': ['pitch','park','playground','garden','track','firepit','grave_yard']
+    'Healthcare': ['dentist','pharmacy','doctors','clinic'],
+    'Public Services': ['fire_station','police','townhall','courthouse'],
+    'Public Transport': ['taxi','bus_stop','bus_station','train_station','train_and_bus_station'],
+    'Dedicated Greenspaces': ['pitch','park','playground','garden','track','firepit','grave_yard']
 }
 
 # assign group to amenities
@@ -70,17 +70,17 @@ amenities_to_plot = amenities[amenities['group'].notna()]
 
 # assign icons to amenities based on their group
 icons_dictionary = {
-    'education': ('blue', 'book'),
-    'food_drink': ('lightgray', 'cutlery'),
-    'groceries': ('gray', 'shopping-cart'),
-    'postal': ('pink', 'envelope'),
-    'banking': ('red', 'credit-card'),
-    'religion': ('orange', 'star'),
-    'entertainment': ('purple', 'film'),
-    'healthcare': ('lightgreen', 'medkit'),
-    'public_services': ('lightblue', 'globe'),
-    'public_transport': ('black', 'bus'),
-    'dedicated_greenspace': ('green', 'tree')
+    'Education': ('blue', 'book'),
+    'Food & Drink': ('lightgray', 'cutlery'),
+    'Groceries': ('gray', 'shopping-cart'),
+    'Postal': ('pink', 'envelope'),
+    'Banking': ('red', 'credit-card'),
+    'Religion': ('orange', 'star'),
+    'Entertainment': ('purple', 'film'),
+    'Healthcare': ('lightgreen', 'medkit'),
+    'Public Services': ('lightblue', 'globe'),
+    'Public Transport': ('black', 'bus'),
+    'Dedicated Greenspaces': ('green', 'tree')
 }
 
 # convert data crs into epsg:4326 for folium
@@ -88,11 +88,26 @@ amenities_to_plot = amenities_to_plot.to_crs(epsg=4326)
 buildings_to_plot = buildings.to_crs(epsg=4326)
 edges_to_plot = edges.to_crs(epsg=4326)
 
-# plot buildings, walking network, and amenities onto a folium map
+# plot buildings onto a folium map
 m = folium.Map(location=[buildings.geometry.centroid.to_crs(epsg=4326).y.mean(),buildings.geometry.centroid.to_crs(epsg=4326).x.mean()], tiles=None)
-folium.GeoJson(buildings_to_plot[['id','geometry']],style_function=lambda feature: {"color": "darkred"}).add_to(m)
-folium.GeoJson(edges_to_plot[['osmid','geometry']],style_function=lambda feature: {"color": "black"}).add_to(m)
-amenities_to_plot.apply(add_amenity_markers, axis=1, map_name=m, icons_dictionary=icons_dictionary)
+bg = folium.FeatureGroup(name='Buildings', show=True)
+folium.GeoJson(buildings_to_plot[['id','geometry']],style_function=lambda feature: {"color": "darkred"}).add_to(bg)
+bg.add_to(m)
+
+# plot walking network onto a folium map
+wng = folium.FeatureGroup(name='Walking Network', show=True)
+folium.GeoJson(edges_to_plot[['osmid','geometry']],style_function=lambda feature: {"color": "black"}).add_to(wng)
+wng.add_to(m)
+
+# assign markers as groups to be plotted instead of plotting directly
+amenity_groups = {}
+for group in amenities_to_plot['group'].unique():
+    ag = folium.FeatureGroup(name=f'Amenities: {group}', show=False)
+    ag.add_to(m)
+    amenity_groups[group] = ag
+
+# plot amenities onto a folium map as groups
+amenities_to_plot.apply(add_amenity_markers, axis=1, amenity_groups=amenity_groups, icons_dictionary=icons_dictionary)
 
 # add base maps to folium map
 folium.TileLayer(tiles='CartoDB positron', name='Light Map (CartoDB').add_to(m)
