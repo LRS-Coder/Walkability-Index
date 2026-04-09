@@ -93,7 +93,7 @@ def osm_download_confirm():
 
             # plot circular boundary on map
             m = folium.Map(location=[lat,lon], tiles=None)
-            folium.GeoJson(download_boundary,style_function=lambda feature: {"color": "black"}).add_to(m)
+            folium.GeoJson(download_boundary,name=location,style_function=lambda feature: {"color": "black"}).add_to(m)
 
         # manual bounding box
         elif method == "3":
@@ -111,8 +111,9 @@ def osm_download_confirm():
                 print("Invalid coordinates. Please try again.")
                 continue
 
+            # plot manual bounding box boundary on map
             m = folium.Map(location=[(lat_min + lat_max)/2, (lon_min + lon_max)/2], tiles=None)
-            folium.GeoJson(download_boundary,style_function=lambda feature: {"color": "black"}).add_to(m)
+            folium.GeoJson(download_boundary,name=location,style_function=lambda feature: {"color": "black"}).add_to(m)
 
         # add base maps to folium map
         folium.TileLayer(tiles='CartoDB positron', name='Light Map (CartoDB').add_to(m)
@@ -155,6 +156,9 @@ def osm_download_all(location, boundary, folder="data"):
     buildings = ox.features_from_polygon(boundary, tags = {"building": True})
     amenities = ox.features_from_polygon(boundary, tags = {"amenity": True, "leisure": True})
     network = ox.graph.graph_from_polygon(boundary, network_type = "walk")
+
+    # only keep buildings with polygon geometry
+    buildings = buildings[buildings.geometry.geom_type.isin(['Polygon','MultiPolygon'])]
 
     # drop unnecessary columns including filling empty amenity column with leisure column (requires flattening)
     buildings = buildings.reset_index()[['id','building','geometry']]
