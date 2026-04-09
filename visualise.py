@@ -34,35 +34,40 @@ def add_amenity_markers(row, amenity_groups, icons_dictionary):
     folium.Marker(location=coords, popup=folium.Popup(popup_text,max_width=250), icon=folium.Icon(color=color, icon=icon, prefix='fa')).add_to(amenity_groups[row['group']])
 
 # read data files
-amenities = gpd.read_file('data/Coleraine_Northern_Ireland_amenities.geojson')
-buildings = gpd.read_file('data/Coleraine_Northern_Ireland_buildings.geojson')
-network = ox.load_graphml('data/Coleraine_Northern_Ireland_network.graphml')
+amenities = gpd.read_file('data/Belfast_Northern_Ireland_amenities.geojson')
+buildings = gpd.read_file('data/Belfast_Northern_Ireland_buildings.geojson')
+network = ox.load_graphml('data/Belfast_Northern_Ireland_network.graphml')
 nodes, edges = ox.graph_to_gdfs(network)
-
-# lists all different types of amenities
-print(amenities['amenity'].value_counts().to_string())
 
 # define amenity groups
 amenity_groups = {
-    'Education': ['school','outdoor_education_centre','college','university','kindergarden'],
-    'Food & Drink': ['fast_food','restaurant','cafe','pub','bar','ice_cream','vending_machine'],
+    'Education': ['school','outdoor_education_centre','college','university','kindergarten'],
+    'Food & Drink': ['fast_food','restaurant','cafe','pub','bar','ice_cream','food_court','vending_machine','drinking_water',
+                     'water_point'],
     'Groceries': ['small_supermarket','medium_supermarket','large_supermarket','hypermarket','marketplace'],
     'Postal': ['post_office','post_box','post_depot'],
-    'Banking': ['atm','bank'],
-    'Religion': ['place_of_worship'],
+    'Banking': ['atm','payment_terminal','bank','moneylender','money_lender','bureau_de_change'],
+    'Religion': ['place_of_worship','monastery'],
     'Entertainment': ['community_centre','casino','concert_hall','cinema','theatre','library','tanning_salon',
                       'adult_gaming_centre','trampoline_park','bowling_alley','miniature_golf','sports_centre',
-                      'fitness_centre','marina','indoor_play'],
-    'Healthcare': ['dentist','pharmacy','doctors','clinic'],
-    'Public Services': ['fire_station','police','townhall','courthouse'],
-    'Public Transport': ['taxi','bus_stop','bus_station','train_station','train_and_bus_station'],
-    'Dedicated Greenspaces': ['pitch','park','playground','garden','track','firepit','grave_yard']
+                      'fitness_centre','marina','indoor_play','events_venue','arts_centre','music_venue',
+                      'studio','nightclub','dance','social_centre','conference_centre','exhibition_centre','golf_course',
+                      'fitness_station','bird_hide','swimming_pool','stadium','gambling','sauna','amusement_arcade',
+                      'music_school','escape_game','fishing','hackerspace','hookah_lounge'],
+    'Healthcare': ['dentist','pharmacy','doctors','clinic','hospital'],
+    'Public Services': ['fire_station','police','townhall','courthouse','ranger_station'],
+    'Public Transport': ['taxi','bus_stop','bus_station','train_station','train_and_bus_station','ferry_terminal'],
+    'Dedicated Greenspaces': ['pitch','park','playground','garden','track','firepit','grave_yard','nature_reserve','dog_park']
 }
 
 # assign group to amenities
 amenity_to_group = {amenity:group
                     for group, amenities in amenity_groups.items()
                     for amenity in amenities}
+
+# lists all different types of amenities not currently used / assigned to a group
+print('The following amenities are not currently being used: ')
+print(amenities.loc[~amenities['amenity'].isin(amenity_to_group), 'amenity'].value_counts())
 
 # map amenities and only keep amenities with an assigned group
 amenities['group'] = amenities['amenity'].str.lower().map(amenity_to_group)
