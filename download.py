@@ -9,6 +9,16 @@ import geopandas as gpd
 from shapely.geometry import Point, box
 import pyproj
 
+# define function for assigning a prefix to ids
+def prefix_ids(df, prefix):
+
+    # create a copy of the dataframe
+    df = df.copy()
+
+    # adds prefix to index based on the dataset obtained from
+    df['id'] = prefix + df.index.astype(str)
+    return df
+
 # define function for creating a circular polygon around a point using local UTM projection
 def create_circle_polygon(lat, lon, radius_km):
 
@@ -222,6 +232,13 @@ def osm_download_all(location, boundary, folder="data"):
         'B': 'bus_station',
         'I': 'train_and_bus_station'
         })
+
+    # assign prefixes to ensure ids are unique and origin is traceable
+    amenities = prefix_ids(amenities, 'osm_')
+    banks_gdf = prefix_ids(banks_gdf, 'bank_')
+    supermarkets_gdf = prefix_ids(supermarkets_gdf, 'market_')
+    bus_stops_gdf = prefix_ids(bus_stops_gdf, 'stop_')
+    stations_gdf = prefix_ids(stations_gdf, 'station_')
 
     # combine amenities data with banks and supermarkets data
     amenities = pd.concat([amenities[['id','name','amenity','geometry']],
