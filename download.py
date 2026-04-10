@@ -159,8 +159,12 @@ def osm_download_confirm():
 # define function for downloading from all required data from OpenStreetMap
 def osm_download_all(location, boundary, folder="data"):
 
-    # formats the location name for use a filename
-    location_filename = location.replace(",", "").replace(" ", "_")
+    # formats the location name for use a folder name
+    location_folder_name = location.title()
+
+    # creates a folder based on the folder name if not already present
+    subfolder = os.path.join(folder, location_folder_name)
+    os.makedirs(subfolder, exist_ok=True)
 
     # download buildings, amenities (including leisure), and walking network
     buildings = ox.features_from_polygon(boundary, tags = {"building": True})
@@ -249,13 +253,13 @@ def osm_download_all(location, boundary, folder="data"):
                           ignore_index=True)
 
     # save buildings
-    buildings_file = os.path.join(folder, f"{location_filename}_buildings.geojson")
+    buildings_file = os.path.join(subfolder, "buildings.geojson")
     buildings.to_file(buildings_file, driver = "GeoJSON")
     # save amenities
-    amenities_file = os.path.join(folder, f"{location_filename}_amenities.geojson")
+    amenities_file = os.path.join(subfolder, "amenities.geojson")
     amenities.to_file(amenities_file, driver = "GeoJSON")
     # save walking network
-    network_file = os.path.join(folder, f"{location_filename}_network.graphml")
+    network_file = os.path.join(subfolder, "network.graphml")
     ox.save_graphml(network, network_file)
 
 osm_download_confirm()

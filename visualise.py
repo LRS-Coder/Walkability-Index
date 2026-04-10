@@ -33,10 +33,13 @@ def add_amenity_markers(row, amenity_groups, icons_dictionary):
     color, icon = icons_dictionary[row.group]
     folium.Marker(location=coords, popup=folium.Popup(popup_text,max_width=250), icon=folium.Icon(color=color, icon=icon, prefix='fa')).add_to(amenity_groups[row['group']])
 
+# define subfolder
+subfolder = 'data/Belfast, Northern Ireland/'
+
 # read data files
-amenities = gpd.read_file('data/Belfast_Northern_Ireland_amenities.geojson')
-buildings = gpd.read_file('data/Belfast_Northern_Ireland_buildings.geojson')
-network = ox.load_graphml('data/Belfast_Northern_Ireland_network.graphml')
+amenities = gpd.read_file(os.path.join(subfolder,'amenities.geojson'))
+buildings = gpd.read_file(os.path.join(subfolder,'buildings.geojson'))
+network = ox.load_graphml(os.path.join(subfolder,'network.graphml'))
 nodes, edges = ox.graph_to_gdfs(network)
 
 # define amenity groups
