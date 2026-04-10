@@ -252,13 +252,13 @@ def osm_download_all(location, boundary, folder="data"):
                            stations_gdf[['id','name','amenity','geometry']]],
                           ignore_index=True)
 
-    # save buildings
+    # save buildings as a GeoJSON
     buildings_file = os.path.join(subfolder, "buildings.geojson")
     buildings.to_file(buildings_file, driver = "GeoJSON")
-    # save amenities
+    # save amenities as a GeoJSON
     amenities_file = os.path.join(subfolder, "amenities.geojson")
     amenities.to_file(amenities_file, driver = "GeoJSON")
-    # save walking network
+    # save walking network as graphml
     network_file = os.path.join(subfolder, "network.graphml")
     ox.save_graphml(network, network_file)
 
