@@ -48,7 +48,7 @@ amenity_groups = {
     'Food & Drink': ['fast_food','restaurant','cafe','pub','bar','ice_cream','food_court','vending_machine','drinking_water',
                      'water_point'],
     'Groceries': ['small_supermarket','medium_supermarket','large_supermarket','hypermarket','marketplace'],
-    'Postal': ['post_office','post_box','post_depot'],
+    'Postal': ['post_office','post_box'],
     'Banking': ['atm','payment_terminal','bank','moneylender','money_lender','bureau_de_change'],
     'Religion': ['place_of_worship','monastery'],
     'Entertainment': ['community_centre','casino','concert_hall','cinema','theatre','library','tanning_salon',
