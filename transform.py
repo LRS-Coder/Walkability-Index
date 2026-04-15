@@ -32,7 +32,7 @@ def counter_parser(s):
     s = str(s).strip()
 
     # check if the Counter string is empty return empty if so
-    if s== 'Counter()' or s == 'Counter({})':
+    if s == 'Counter()' or s == 'Counter({})':
         return {}
 
     # check if the expected format Counter(...) and remove Counter( and ) if so
@@ -70,7 +70,7 @@ def id_parser(d):
     if isinstance(d,list):
         return d
 
-    # if a string attempt to convert into a list (list is the format it should be parsed into)
+    # if a string attempts to convert into a list (list is the format it should be parsed into)
     if isinstance(d,str):
         return ast.literal_eval(d)
     return [d]
