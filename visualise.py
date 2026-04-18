@@ -95,7 +95,22 @@ network = ox.load_graphml(os.path.join(subfolder,'network.graphml'))
 nodes, edges = ox.graph_to_gdfs(network)
 
 # define selection of walkability time (can be 15, 30, or 60)
-selection = 15
+while True:
+    try:
+
+        # user can select a value of 15, 30, or 60 only
+        selection = int(input('Select a timeframe for the Walkability Index (15, 30, or 60 minutes): '))
+        if selection in [15, 30, 60]:
+            break
+
+        # if user enters any other number they will be prompted to try again
+        else:
+            print('Please type 15, 30, or 60.')
+            continue
+
+    # if user inputs something other than a number they will be prompted to try again
+    except Exception:
+        print('User did not enter a number, please try again')
 
 # assign group to amenities
 amenity_to_group = {amenity:group
@@ -141,7 +156,7 @@ m.fit_bounds([[miny,minx],[maxy,maxx]])
 scores = ['Overall'] + list(amenity_groups.keys())
 
 # plot buildings onto a folium map
-add_walkability_buildings(buildings_to_plot, scores, 15)
+add_walkability_buildings(buildings_to_plot, scores, selection)
 
 # plot walking network onto a folium map
 wng = folium.FeatureGroup(name='Walking Network', show=False)
@@ -169,18 +184,23 @@ with tempfile.NamedTemporaryFile(delete=False, suffix='.html') as tf:
 m.save(temp_path)
 
 # display boundary plot in browser and ask whether boundary is satisfactory
-webbrowser.open(f'file://{temp_path}')
+try:
+    webbrowser.open(f'file://{temp_path}')
 
-while True:
-    satisfactory = input('Is this map satisfactory? (yes): ').strip().lower()
+    while True:
+        satisfactory = input('Is this map satisfactory? (yes): ').strip().lower()
 
-    # act on decision
-    if satisfactory in ['y', 'yes']:
-        print('User is satisfied with the map.')
-        break
-    else:
-        print("Invalid Input. Please type 'yes'.")
-        continue
+        # act on decision
+        if satisfactory in ['y', 'yes']:
+            print('User is satisfied with the map.')
+            break
+
+        # ask question again
+        else:
+            print("Invalid Input. Please type 'yes'.")
+            continue
 
 # delete the temporary file
-os.remove(temp_path)
+finally:
+    if os.path.exists(temp_path):
+        os.remove(temp_path)
