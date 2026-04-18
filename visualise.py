@@ -8,6 +8,7 @@ import pandas as pd
 import geopandas as gpd
 import branca.colormap as cm
 from config import amenity_groups
+from transform import select_subfolder
 
 # define function for adding amenity markers to a folium map as groups
 def add_amenity_markers(row, amenity_groups, icons_dictionary):
@@ -85,7 +86,7 @@ def add_walkability_buildings(buildings, scores, t=15):
     return m
 
 # define subfolder
-subfolder = 'data/Coleraine, Northern Ireland/'
+subfolder = select_subfolder()
 
 # read data files
 amenities = gpd.read_file(os.path.join(subfolder,'amenities.geojson'))

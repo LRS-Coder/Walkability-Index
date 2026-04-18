@@ -250,18 +250,21 @@ def select_subfolder():
     print('Data will be loaded from: ' + str(subfolder))
     return subfolder
 
-# define subfolder
-subfolder = select_subfolder()
+# only run if executed directly
+if __name__ == '__main__':
 
-# define paths to read data files
-amenities_path = os.path.join(subfolder,'amenities.geojson')
-buildings_path = os.path.join(subfolder,'buildings.geojson')
-network_path = os.path.join(subfolder,'network.graphml')
+    # define subfolder
+    subfolder = select_subfolder()
 
-# define output paths
-access_path = os.path.join(subfolder,'buildings_access.csv')
-output_path = os.path.join(subfolder,'buildings_scored.geojson')
+    # define paths to read data files
+    amenities_path = os.path.join(subfolder,'amenities.geojson')
+    buildings_path = os.path.join(subfolder,'buildings.geojson')
+    network_path = os.path.join(subfolder,'network.graphml')
 
-# run scoring access and scoring function and save results to csv
-building_access(access_path, amenities_path, buildings_path, network_path)
-apply_scoring(access_path, buildings_path, output_path)
+    # define output paths
+    access_path = os.path.join(subfolder,'buildings_access.csv')
+    output_path = os.path.join(subfolder,'buildings_scored.geojson')
+
+    # run scoring access and scoring function and save results to csv
+    building_access(access_path, amenities_path, buildings_path, network_path)
+    apply_scoring(access_path, buildings_path, output_path)
