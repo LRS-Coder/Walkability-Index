@@ -218,8 +218,40 @@ def apply_scoring(access_path, buildings_path, output_path):
     output.to_file(output_path, driver="GeoJSON")
     print("Added scores to GeoJSON.")
 
+# define function for selecting a subfolder from all subfolders in data/
+def select_subfolder():
+    # define a list of the subfolders in data only including subfolders not the .csv data
+    subfolders = [
+        name for name in os.listdir('data') if os.path.isdir(os.path.join('data', name))
+    ]
+
+    # print all subfolders present in data with a number
+    for i, name in enumerate(subfolders, start=1):
+        print(f'{i}: {name}')
+
+    # user selects the data they want to use by inputting the number associated with the subfolder
+    while True:
+        # defines subfolder based on the choice of the user
+        try:
+            choice = int(input("Please select which location's data you want to use (1,2,3...): "))
+            if 1 <= choice <= len(subfolders):
+                subfolder = 'data/' + str(subfolders[choice - 1]) + '/'
+                break
+
+            # if user inputs a number to big or small they will be reminded of the range of numbers and user will try again
+            else:
+                print('Please select a number between 1 and ' + str(len(subfolders)))
+
+        # if an exception occurs (user did not input a number) an error message is displayed and user will try again
+        except Exception:
+            print('User did not select a number, please try again')
+
+    # print and return the subfolder the user has selected
+    print('Data will be loaded from: ' + str(subfolder))
+    return subfolder
+
 # define subfolder
-subfolder = 'data/Coleraine, Northern Ireland/'
+subfolder = select_subfolder()
 
 # define paths to read data files
 amenities_path = os.path.join(subfolder,'amenities.geojson')
