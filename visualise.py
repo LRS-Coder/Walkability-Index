@@ -36,26 +36,6 @@ def add_amenity_markers(row, amenity_groups, icons_dictionary):
     color, icon = icons_dictionary[row.group]
     folium.Marker(location=coords, popup=folium.Popup(popup_text,max_width=250), icon=folium.Icon(color=color, icon=icon, prefix='fa')).add_to(amenity_groups[row['group']])
 
-# define a function for creating the style function for add_walkability_buildings
-def make_style_function(colormap, walkability):
-
-    # utilise an inner function to remember colormap and walkability
-    def style_function(feature):
-
-        # extract walkability index
-        val = feature['properties'].get(walkability)
-
-        # convert value into a colour and return it with the other styling instructions
-        return {
-            'fillColor': colormap(val),
-            'color': 'black',
-            'fillOpacity': 1,
-            'weight': 1,
-        }
-
-    # return the inner function
-    return style_function
-
 # define function for adding buildings to folium map with scoring for a given distance, and colouring buildings based on overall score
 def add_walkability_buildings(buildings, scores, t=15):
     # define the name of the walkability index based on selected walking time
@@ -68,20 +48,28 @@ def add_walkability_buildings(buildings, scores, t=15):
     # define the tooltip using the fields and aliases previously defined
     tooltip = folium.GeoJsonTooltip(fields = hover_fields, aliases = hover_aliases, sticky = True)
 
-    # define the colourmap to match the expected scale of the walkability score and set caption
-    colormap = cm.linear.viridis.scale(0,100)
-    colormap.caption = f'{t}-minute Walkability Score'
+    # define the colourmap to match the expected scale of the walkability score and apply colourmap
+    colourmap = cm.linear.viridis.scale(0,100)
+    buildings_to_plot['colour'] = buildings_to_plot[f'{selection} Overall'].apply(colourmap)
+
+    # set caption
+    colourmap.caption = f'{t}-minute Walkability Score'
 
     # plot the buildings with their associated data onto the folium map
     folium.GeoJson(
         buildings,
         name = f'Buildings with {t}-minute Walkability Score',
-        style_function = make_style_function(colormap, walkability),
+        style_function = lambda f: {
+            'fillColor': f['properties']['colour'],
+            'color': 'black',
+            'fillOpacity': 1,
+            'weight': 1,
+        },
         tooltip = tooltip
     ).add_to(m)
 
     # add the colourmap to the folium map
-    colormap.add_to(m)
+    colourmap.add_to(m)
 
     return m
 
