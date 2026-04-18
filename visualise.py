@@ -144,7 +144,7 @@ scores = ['Overall'] + list(amenity_groups.keys())
 add_walkability_buildings(buildings_to_plot, scores, 15)
 
 # plot walking network onto a folium map
-wng = folium.FeatureGroup(name='Walking Network', show=True)
+wng = folium.FeatureGroup(name='Walking Network', show=False)
 folium.GeoJson(edges_to_plot[['osmid','geometry']],style_function=lambda feature: {"color": "black"}).add_to(wng)
 wng.add_to(m)
 
