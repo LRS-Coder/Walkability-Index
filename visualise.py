@@ -7,7 +7,8 @@ import webbrowser
 import pandas as pd
 import geopandas as gpd
 import branca.colormap as cm
-from config import amenity_groups
+import matplotlib.pyplot as plt
+from config import amenity_groups, folium_threshold
 from transform import select_subfolder
 
 # define function for adding amenity markers to a folium map as groups
@@ -73,6 +74,122 @@ def add_walkability_buildings(buildings, scores, t=15):
 
     return m
 
+# define function to create an interactive folium map
+def create_interactive_map(buildings, amenities, edges, selection, icons_dictionary):
+
+    # prints to let user know an interactive map is being created
+    print('Creating an interactive map...')
+
+    # convert data crs into epsg:4326 for folium
+    amenities_to_plot = amenities_to_plot.to_crs(epsg=4326)
+    buildings_to_plot = buildings.to_crs(epsg=4326)
+    edges_to_plot = edges.to_crs(epsg=4326)
+
+    # calculate bounds of the map
+    minx, miny, maxx, maxy = buildings_to_plot.total_bounds
+
+    # create folium map with scale bar which is centred on and zoomed into the desired region
+    m = folium.Map(location=[(miny + maxy)/2,(minx + maxx)/2], tiles=None, control_scale=True)
+    m.fit_bounds([[miny,minx],[maxy,maxx]])
+
+    # define a list of the names of the scoring indexes to use in building tooltips
+    scores = ['Overall'] + list(amenity_groups.keys())
+
+    # plot buildings onto a folium map
+    add_walkability_buildings(buildings_to_plot, scores, selection)
+
+    # plot walking network onto a folium map
+    wng = folium.FeatureGroup(name='Walking Network', show=False)
+    folium.GeoJson(edges_to_plot[['osmid','geometry']],style_function=lambda feature: {"color": "black"}).add_to(wng)
+    wng.add_to(m)
+
+    # assign markers as groups to be plotted instead of plotting directly
+    amenity_groupings = {}
+    for group in amenities_to_plot['group'].unique():
+      ag = folium.FeatureGroup(name=f'Amenities: {group}', show=False)
+      ag.add_to(m)
+      amenity_groupings[group] = ag
+
+    # plot amenities onto a folium map as groups
+    amenities_to_plot.apply(add_amenity_markers, axis=1, amenity_groups=amenity_groupings, icons_dictionary=icons_dictionary)
+
+    # add base maps to folium map
+    folium.TileLayer(tiles='Esri WorldImagery', name='Satellite (Esri)').add_to(m)
+    folium.TileLayer(tiles='CartoDB positron', name='Light Map (CartoDB)').add_to(m)
+    folium.LayerControl().add_to(m)
+
+    # create a temporary file to for folium image
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.html') as tf:
+        temp_path = tf.name
+    m.save(temp_path)
+
+    # display boundary plot in browser and ask whether boundary is satisfactory
+    try:
+        webbrowser.open(f'file://{temp_path}')
+        while True:
+            satisfactory = input('Is this map satisfactory? (yes/no): ').strip().lower()
+
+            # exit while condition
+            if satisfactory in ['y', 'yes']:
+                print('User is satisfied with the map.')
+                break
+
+            # ask user if they would like to try running the static map function
+            elif satisfactory in ['n', 'no']:
+                try_static = input("Please type 'yes' if you would like to produce a static map: ").strip().lower()
+
+                # create a static map if user entered yes
+                if try_static in ['y', 'yes']:
+                    create_static_map(buildings, edges, selection)
+
+                # print that user does not want to create a static map if not yes
+                else:
+                    print('User does not want to create a static map.')
+
+                # exit while condition
+                break
+
+            # ask question again
+            else:
+                print("Invalid Input. Please type 'yes'.")
+                continue
+
+    # delete the temporary file
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+# define function to create a static matplotlib map
+def create_static_map(buildings, edges, selection):
+
+    # prints to let user know a static map is being created
+    print('Creating a static map...')
+
+    # create the figure and axis objects to add the map to
+    fig, ax = plt.subplots(figsize=(20,20))
+
+    # add buildings to the map
+    buildings.plot(
+        column = f'{selection} Overall',
+        cmap = 'viridis',
+        vmin=0,
+        vmax=100,
+        linewidth = 0.5,
+        ax = ax,
+        legend = True,
+        legend_kwds = {'label': f'{selection}-minute walkability score'}
+    )
+
+    # add walking network to the map
+    edges.plot(
+        linewidth = 0.5,
+        color = 'black',
+        ax = ax
+    )
+
+    plt.savefig(f'{subfolder}{selection}_map.png', dpi=600, bbox_inches='tight')
+    plt.show()
+
 # define subfolder
 subfolder = select_subfolder()
 
@@ -81,6 +198,9 @@ amenities = gpd.read_file(os.path.join(subfolder,'amenities.geojson'))
 buildings = gpd.read_file(os.path.join(subfolder,'buildings_scored.geojson'))
 network = ox.load_graphml(os.path.join(subfolder,'network.graphml'))
 nodes, edges = ox.graph_to_gdfs(network)
+
+# count the number of buildings in the file
+building_count = len(buildings)
 
 # define selection of walkability time (can be 15, 30, or 60)
 while True:
@@ -128,67 +248,24 @@ icons_dictionary = {
     'Dedicated Greenspaces': ('green', 'tree')
 }
 
-# convert data crs into epsg:4326 for folium
-amenities_to_plot = amenities_to_plot.to_crs(epsg=4326)
-buildings_to_plot = buildings.to_crs(epsg=4326)
-edges_to_plot = edges.to_crs(epsg=4326)
+# ask if user wants an interactive map if the building count is less than
+if building_count > folium_threshold:
+    print('Dataset too large for an interactive map.')
+    create_static_map(buildings, edges, selection)
 
-# calculate bounds of the map
-minx, miny, maxx, maxy = buildings_to_plot.total_bounds
-
-# create folium map with scale bar which is centred on and zoomed into the desired region
-m = folium.Map(location=[(miny + maxy)/2,(minx + maxx)/2], tiles=None, control_scale=True)
-m.fit_bounds([[miny,minx],[maxy,maxx]])
-
-# define a list of the names of the scoring indexes to use in building tooltips
-scores = ['Overall'] + list(amenity_groups.keys())
-
-# plot buildings onto a folium map
-add_walkability_buildings(buildings_to_plot, scores, selection)
-
-# plot walking network onto a folium map
-wng = folium.FeatureGroup(name='Walking Network', show=False)
-folium.GeoJson(edges_to_plot[['osmid','geometry']],style_function=lambda feature: {"color": "black"}).add_to(wng)
-wng.add_to(m)
-
-# assign markers as groups to be plotted instead of plotting directly
-amenity_groupings = {}
-for group in amenities_to_plot['group'].unique():
-    ag = folium.FeatureGroup(name=f'Amenities: {group}', show=False)
-    ag.add_to(m)
-    amenity_groupings[group] = ag
-
-# plot amenities onto a folium map as groups
-amenities_to_plot.apply(add_amenity_markers, axis=1, amenity_groups=amenity_groupings, icons_dictionary=icons_dictionary)
-
-# add base maps to folium map
-folium.TileLayer(tiles='Esri WorldImagery', name='Satellite (Esri)').add_to(m)
-folium.TileLayer(tiles='CartoDB positron', name='Light Map (CartoDB)').add_to(m)
-folium.LayerControl().add_to(m)
-
-# create a temporary file to for folium image
-with tempfile.NamedTemporaryFile(delete=False, suffix='.html') as tf:
-    temp_path = tf.name
-m.save(temp_path)
-
-# display boundary plot in browser and ask whether boundary is satisfactory
-try:
-    webbrowser.open(f'file://{temp_path}')
-
+else:
     while True:
-        satisfactory = input('Is this map satisfactory? (yes): ').strip().lower()
+        folium_choice = input('Would you like to create an interactive map? (yes/no): ').strip().lower()
 
         # act on decision
-        if satisfactory in ['y', 'yes']:
-            print('User is satisfied with the map.')
+        if folium_choice in ['y', 'yes']:
+            print('User wants an interactive map.')
+            create_interactive_map(buildings, amenities, edges, selection, icons_dictionary)
             break
-
-        # ask question again
+        elif folium_choice in ['n', 'no']:
+            print('User DOES NOT want an interactive map.')
+            create_static_map(buildings, edges, selection)
+            break
         else:
-            print("Invalid Input. Please type 'yes'.")
+            print("Invalid Input. Please type 'yes' or 'no'.")
             continue
-
-# delete the temporary file
-finally:
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
