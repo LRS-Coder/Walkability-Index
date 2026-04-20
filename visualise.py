@@ -165,8 +165,20 @@ def create_static_map(buildings, edges, selection):
     # prints to let user know a static map is being created
     print('Creating a static map...')
 
-    # create the figure and axis objects to add the map to
-    fig, ax = plt.subplots(figsize=(20,20))
+    # update buildings and edges to Irish Transverse Mercator (EPSG:2157)
+    buildings = buildings.to_crs(2157)
+    edges = edges.to_crs(2157)
+
+    # estimate map size and use to determine linewidth (ensure between 0.05 and 2) and to create a height relative to a fixed width of 20
+    xmin, ymin, xmax, ymax = buildings.total_bounds
+    lw =  max(0.05, min(2000 / max(xmax - xmin, ymax - ymin), 2))
+    height = (20 * (ymax - ymin)/(xmax - xmin))
+
+    # create the figure and axis objects to add the map to with axis relating to extent
+    fig, ax = plt.subplots(figsize=(20,height))
+
+    # ensure geography is preserved and buildings and edges are not stretched
+    ax.set_aspect('equal')
 
     # add buildings to the map
     buildings.plot(
@@ -174,7 +186,7 @@ def create_static_map(buildings, edges, selection):
         cmap = 'viridis',
         vmin=0,
         vmax=100,
-        linewidth = 0.5,
+        linewidth = lw,
         ax = ax,
         legend = True,
         legend_kwds = {'label': f'{selection}-minute walkability score'}
@@ -182,7 +194,7 @@ def create_static_map(buildings, edges, selection):
 
     # add walking network to the map
     edges.plot(
-        linewidth = 0.5,
+        linewidth = lw,
         color = 'black',
         ax = ax
     )
