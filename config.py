@@ -40,3 +40,6 @@ scorer_weights= {
     'Public Transport': 5,
     'Dedicated Greenspaces': 3
 }
+
+# define the maximum number of buildings at which loading a folium map will be attempted
+folium_threshold = 15000
