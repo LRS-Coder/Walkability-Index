@@ -38,7 +38,7 @@ def add_amenity_markers(row, amenity_groups, icons_dictionary):
     folium.Marker(location=coords, popup=folium.Popup(popup_text,max_width=250), icon=folium.Icon(color=color, icon=icon, prefix='fa')).add_to(amenity_groups[row['group']])
 
 # define function for adding buildings to folium map with scoring for a given distance, and colouring buildings based on overall score
-def add_walkability_buildings(buildings, scores, t=15):
+def add_walkability_buildings(buildings, scores, m, t=15):
     # define the name of the walkability index based on selected walking time
     walkability = f'{t} Overall'
 
@@ -51,7 +51,7 @@ def add_walkability_buildings(buildings, scores, t=15):
 
     # define the colourmap to match the expected scale of the walkability score and apply colourmap
     colourmap = cm.linear.viridis.scale(0,100)
-    buildings_to_plot['colour'] = buildings_to_plot[f'{selection} Overall'].apply(colourmap)
+    buildings['colour'] = buildings[f'{selection} Overall'].apply(colourmap)
 
     # set caption
     colourmap.caption = f'{t}-minute Walkability Score'
@@ -81,7 +81,7 @@ def create_interactive_map(buildings, amenities, edges, selection, icons_diction
     print('Creating an interactive map...')
 
     # convert data crs into epsg:4326 for folium
-    amenities_to_plot = amenities_to_plot.to_crs(epsg=4326)
+    amenities_to_plot = amenities.to_crs(epsg=4326)
     buildings_to_plot = buildings.to_crs(epsg=4326)
     edges_to_plot = edges.to_crs(epsg=4326)
 
@@ -96,7 +96,7 @@ def create_interactive_map(buildings, amenities, edges, selection, icons_diction
     scores = ['Overall'] + list(amenity_groups.keys())
 
     # plot buildings onto a folium map
-    add_walkability_buildings(buildings_to_plot, scores, selection)
+    add_walkability_buildings(buildings_to_plot, scores, m, selection)
 
     # plot walking network onto a folium map
     wng = folium.FeatureGroup(name='Walking Network', show=False)
@@ -260,7 +260,7 @@ else:
         # act on decision
         if folium_choice in ['y', 'yes']:
             print('User wants an interactive map.')
-            create_interactive_map(buildings, amenities, edges, selection, icons_dictionary)
+            create_interactive_map(buildings, amenities_to_plot, edges, selection, icons_dictionary)
             break
         elif folium_choice in ['n', 'no']:
             print('User DOES NOT want an interactive map.')
