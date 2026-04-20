@@ -12,7 +12,7 @@ amenity_groups = {
                       'fitness_centre','marina','indoor_play','events_venue','arts_centre','music_venue',
                       'studio','nightclub','dance','social_centre','conference_centre','exhibition_centre','golf_course',
                       'fitness_station','bird_hide','swimming_pool','stadium','gambling','sauna','amusement_arcade',
-                      'music_school','escape_game','fishing','hackerspace','hookah_lounge'],
+                      'music_school','dancing_school','escape_game','fishing','hackerspace','hookah_lounge','horse_riding'],
     'Healthcare': ['dentist','pharmacy','doctors','clinic','hospital'],
     'Public Services': ['fire_station','police','townhall','courthouse','ranger_station'],
     'Public Transport': ['taxi','bus_stop','bus_station','train_station','train_and_bus_station','ferry_terminal'],
