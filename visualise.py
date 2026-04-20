@@ -180,24 +180,28 @@ def create_static_map(buildings, edges, selection):
     # ensure geography is preserved and buildings and edges are not stretched
     ax.set_aspect('equal')
 
-    # add buildings to the map
-    buildings.plot(
-        column = f'{selection} Overall',
-        cmap = 'viridis',
-        vmin=0,
-        vmax=100,
-        linewidth = lw,
-        ax = ax,
-        legend = True,
-        legend_kwds = {'label': f'{selection}-minute walkability score'}
-    )
-
     # add walking network to the map
     edges.plot(
         linewidth = lw,
         color = 'black',
         ax = ax
     )
+
+    # add buildings to the map
+    buildings.plot(
+        column = f'{selection} Overall',
+        cmap = 'viridis',
+        vmin=0,
+        vmax=100,
+        linewidth = 0,
+        ax = ax,
+        legend = True,
+        legend_kwds = {'label': f'{selection}-minute walkability score'}
+    )
+
+    # label axes
+    ax.set_xlabel('ITM Easting (m)')
+    ax.set_ylabel('ITM Northing (m)')
 
     plt.savefig(f'{subfolder}{selection}_map.png', dpi=600, bbox_inches='tight')
     plt.show()
