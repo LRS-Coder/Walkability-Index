@@ -8,6 +8,7 @@ import pandas as pd
 import geopandas as gpd
 import branca.colormap as cm
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from config import amenity_groups, folium_threshold
 from transform import select_subfolder
@@ -74,6 +75,94 @@ def add_walkability_buildings(buildings, scores, m, t=15):
     colourmap.add_to(m)
 
     return m
+
+# define function to create a box style scale bar for static maps
+def add_scalebar(ax, length, n=4, location=(0.6,0.05)):
+
+    # define axis limits in projected coordinates
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+
+    # calculate the extent of the map
+    xmin, xmax = xlim
+    ymin, ymax = ylim
+    map_width = xmax - xmin
+    map_height = ymax - ymin
+
+    # define starting coordinates based on desired location on map
+    x0 = xmin + location[0] * map_width
+    y0 = ymin + location[1] * map_height
+
+    # select a nice length value from list
+    nice_values = [
+        10, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000
+    ]
+    length = min(nice_values, key=lambda x: abs(x - (map_width * 0.25)))
+
+    # select units based on length
+    if length >= 1000:
+        unit = 'km'
+        scale = 1000
+    else:
+        unit = 'm'
+        scale = 1
+
+    # define segment size and height
+    seg = length / n
+    h = map_height * 0.02
+
+    # add padding around scale bar to aid readability
+    ax.add_patch(Rectangle(
+        (x0 - seg * 0.3, y0 - h * 1.5),
+        length + seg * 0.6,
+        h * 2.5,
+        facecolor='white',
+        edgecolor='none',
+        alpha=0.8
+    ))
+
+    # add alternating boxes (black and white)
+    for i in range(n):
+
+        # alternate between black and white boxes
+        colour = 'black' if i % 2 == 0 else 'white'
+
+        # create the rectangle for each segment
+        ax.add_patch(Rectangle(
+            (x0 + i * seg, y0),
+            seg,
+            h,
+            facecolor=colour,
+            edgecolor='black',
+            linewidth=1
+        ))
+
+    # add tick labels to the scale bar
+    for i in range(n+1):
+
+        # update x position
+        x_pos = x0 + i * seg
+
+        # update tick value
+        value = (i*seg) / scale
+
+        # add unit to last tick
+        if i == n:
+            label = f'{value:g} {unit}'
+            ha = 'left'
+        else:
+            label = f'{value:g}'
+            ha = 'center'
+
+        # add the label to the scale bar
+        ax.text(
+            x_pos,
+            y0 - h,
+            label,
+            ha=ha,
+            va='top',
+            fontsize=9
+        )
 
 # define function to create an interactive folium map
 def create_interactive_map(buildings, amenities, edges, selection, icons_dictionary):
@@ -204,6 +293,9 @@ def create_static_map(buildings, edges, selection):
         cax = cax,
         legend_kwds = {'label': f'{selection}-minute walkability score'}
     )
+
+    # add scale bar to the map
+    add_scalebar(ax, length=((xmax - xmin)/4))
 
     # label axes
     ax.set_xlabel('ITM Easting (m)')
