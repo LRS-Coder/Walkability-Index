@@ -8,6 +8,7 @@ import pandas as pd
 import geopandas as gpd
 import branca.colormap as cm
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from config import amenity_groups, folium_threshold
 from transform import select_subfolder
 
@@ -180,6 +181,10 @@ def create_static_map(buildings, edges, selection):
     # ensure geography is preserved and buildings and edges are not stretched
     ax.set_aspect('equal')
 
+    # ensure colour bar that stays in line with the map
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.1, axes_class=plt.Axes)
+
     # add walking network to the map
     edges.plot(
         linewidth = lw,
@@ -196,6 +201,7 @@ def create_static_map(buildings, edges, selection):
         linewidth = 0,
         ax = ax,
         legend = True,
+        cax = cax,
         legend_kwds = {'label': f'{selection}-minute walkability score'}
     )
 
@@ -203,6 +209,7 @@ def create_static_map(buildings, edges, selection):
     ax.set_xlabel('ITM Easting (m)')
     ax.set_ylabel('ITM Northing (m)')
 
+    # save and display map
     plt.savefig(f'{subfolder}{selection}_map.png', dpi=600, bbox_inches='tight')
     plt.show()
 
