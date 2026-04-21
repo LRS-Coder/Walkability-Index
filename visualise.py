@@ -77,7 +77,7 @@ def add_walkability_buildings(buildings, scores, m, t=15):
     return m
 
 # define function to create a box style scale bar for static maps
-def add_scalebar(ax, length, n=4, location=(0.6,0.05)):
+def add_scalebar(ax, length, n=4, location=(0.6,0.03)):
 
     # define axis limits in projected coordinates
     xlim = ax.get_xlim()
@@ -157,7 +157,7 @@ def add_scalebar(ax, length, n=4, location=(0.6,0.05)):
         # add the label to the scale bar
         ax.text(
             x_pos,
-            y0 - h,
+            y0 - (h/2),
             label,
             ha=ha,
             va='top',
