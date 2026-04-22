@@ -1,11 +1,15 @@
-# import modules
+# import modules from standard library
 import os
+import ast
+from collections import defaultdict, Counter
+
+# import modules from third-party
 import osmnx as ox
 import networkx as nx
 import pandas as pd
 import geopandas as gpd
-import ast
-from collections import defaultdict, Counter
+
+# import local modules
 import config
 from scoring import scorer_methods
 

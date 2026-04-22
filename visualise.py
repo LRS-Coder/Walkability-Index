@@ -1,15 +1,19 @@
-# import modules
+# import modules from standard library
 import os
-import folium
-import osmnx as ox
 import tempfile
 import webbrowser
+
+# import modules from third-party
+import folium
+import osmnx as ox
 import pandas as pd
 import geopandas as gpd
 import branca.colormap as cm
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+# import local modules
 from config import amenity_groups, folium_threshold
 from transform import select_subfolder
 

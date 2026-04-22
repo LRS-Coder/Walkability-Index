@@ -1,13 +1,15 @@
-# import modules
+# import modules from standard library
 import os
-import folium
-import osmnx as ox
 import tempfile
 import webbrowser
+
+# import modules from third-party
+import pyproj
+import folium
+import osmnx as ox
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Point, box
-import pyproj
 
 # define function for assigning a prefix to ids
 def prefix_ids(df, prefix):

@@ -1,5 +1,7 @@
-# import modules
+# import modules from standard library
 import math
+
+# import local modules
 from config import amenity_groups
 
 # define function to count how many distinct items are present
