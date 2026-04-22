@@ -1,4 +1,4 @@
-# import modules
+# import modules from standard library
 import pandas as pd
 
 # remove unnecessary rows and columns from csvs and save
