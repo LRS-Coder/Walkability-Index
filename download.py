@@ -44,7 +44,7 @@ def assign_supermarket_amenity(size_band):
         return 'hypermarket'
 
 # define function for ensuring location is giving the correct boundary
-def osm_download_confirm():
+def download_confirm():
 
     # user inputs locations until satisfied with the boundary they would be downloading
     while True:
@@ -145,7 +145,7 @@ def osm_download_confirm():
             # act on decision
             if satisfactory in ['y','yes']:
                 print('User is satisfied with the boundary.')
-                osm_download_all(location, download_boundary)
+                download_all(location, download_boundary)
                 print('Successfully downloaded all files')
                 break
             elif satisfactory in ['n','no']:
@@ -158,8 +158,8 @@ def osm_download_confirm():
         # delete the temporary file
         os.remove(temp_path)
 
-# define function for downloading from all required data from OpenStreetMap
-def osm_download_all(location, boundary, folder="data"):
+# define function for downloading all required data from OpenStreetMap, and local data files
+def download_all(location, boundary, folder="data"):
 
     # formats the location name for use a folder name
     location_folder_name = location.title()
@@ -264,4 +264,4 @@ def osm_download_all(location, boundary, folder="data"):
     network_file = os.path.join(subfolder, "network.graphml")
     ox.save_graphml(network, network_file)
 
-osm_download_confirm()
+download_confirm()
