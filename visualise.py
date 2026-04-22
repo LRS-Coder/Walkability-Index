@@ -57,7 +57,7 @@ def add_walkability_buildings(buildings, scores, m, t=15):
 
     # define the colourmap to match the expected scale of the walkability score and apply colourmap
     colourmap = cm.linear.viridis.scale(0,100)
-    buildings['colour'] = buildings[f'{selection} Overall'].apply(colourmap)
+    buildings['colour'] = buildings[f'{t} Overall'].apply(colourmap)
 
     # set caption
     colourmap.caption = f'{t}-minute Walkability Score'
@@ -169,7 +169,7 @@ def add_scalebar(ax, length, n=4, location=(0.6,0.03)):
         )
 
 # define function to create an interactive folium map
-def create_interactive_map(buildings, amenities, edges, selection, icons_dictionary):
+def create_interactive_map(subfolder, buildings, amenities, edges, selection, icons_dictionary):
 
     # prints to let user know an interactive map is being created
     print('Creating an interactive map...')
@@ -234,7 +234,7 @@ def create_interactive_map(buildings, amenities, edges, selection, icons_diction
 
                 # create a static map if user entered yes
                 if try_static in ['y', 'yes']:
-                    create_static_map(buildings, edges, selection)
+                    create_static_map(subfolder, buildings, edges, selection)
 
                 # print that user does not want to create a static map if not yes
                 else:
@@ -254,7 +254,7 @@ def create_interactive_map(buildings, amenities, edges, selection, icons_diction
             os.remove(temp_path)
 
 # define function to create a static matplotlib map
-def create_static_map(buildings, edges, selection):
+def create_static_map(subfolder, buildings, edges, selection):
 
     # prints to let user know a static map is being created
     print('Creating a static map...')
@@ -309,82 +309,86 @@ def create_static_map(buildings, edges, selection):
     plt.savefig(f'{subfolder}{selection}_map.png', dpi=600, bbox_inches='tight')
     plt.show()
 
-# define subfolder
-subfolder = select_subfolder()
+# define function to select the desired walkability time (can be 15, 30, or 60)
+def get_timeframe():
+    while True:
+        try:
 
-# read data files
-amenities = gpd.read_file(os.path.join(subfolder,'amenities.geojson'))
-buildings = gpd.read_file(os.path.join(subfolder,'buildings_scored.geojson'))
-network = ox.load_graphml(os.path.join(subfolder,'network.graphml'))
-nodes, edges = ox.graph_to_gdfs(network)
+            # user can select a value of 15, 30, or 60 only
+            selection = int(input('Select a timeframe for the Walkability Index (15, 30, or 60 minutes): '))
+            if selection in [15, 30, 60]:
+                return selection
 
-# count the number of buildings in the file
-building_count = len(buildings)
+            # if user enters any other number they will be prompted to try again
+            else:
+                print('Please type 15, 30, or 60.')
+                continue
 
-# define selection of walkability time (can be 15, 30, or 60)
-while True:
-    try:
+        # if user inputs something other than a number they will be prompted to try again
+        except Exception:
+            print('User did not enter a number, please try again')
 
-        # user can select a value of 15, 30, or 60 only
-        selection = int(input('Select a timeframe for the Walkability Index (15, 30, or 60 minutes): '))
-        if selection in [15, 30, 60]:
-            break
+# define function for running the visualise pipeline
+def run_visualise(subfolder):
 
-        # if user enters any other number they will be prompted to try again
-        else:
-            print('Please type 15, 30, or 60.')
-            continue
+    # read data files
+    amenities = gpd.read_file(os.path.join(subfolder, 'amenities.geojson'))
+    buildings = gpd.read_file(os.path.join(subfolder, 'buildings_scored.geojson'))
+    network = ox.load_graphml(os.path.join(subfolder, 'network.graphml'))
+    edges = ox.graph_to_gdfs(network)[1]
 
-    # if user inputs something other than a number they will be prompted to try again
-    except Exception:
-        print('User did not enter a number, please try again')
+    # count the number of buildings in the file
+    building_count = len(buildings)
 
-# assign group to amenities
-amenity_to_group = {amenity:group
+    # assign group to amenities
+    amenity_to_group = {amenity:group
                     for group, amenities in amenity_groups.items()
                     for amenity in amenities}
 
-# lists all different types of amenities not currently used / assigned to a group
-print('The following amenities are not currently being used: ')
-print(amenities.loc[~amenities['amenity'].isin(amenity_to_group), 'amenity'].value_counts())
+    # lists all different types of amenities not currently used / assigned to a group
+    print('The following amenities are not currently being used: ')
+    print(amenities.loc[~amenities['amenity'].isin(amenity_to_group), 'amenity'].value_counts())
 
-# map amenities and only keep amenities with an assigned group
-amenities['group'] = amenities['amenity'].str.lower().map(amenity_to_group)
-amenities_to_plot = amenities[amenities['group'].notna()]
+    # map amenities and only keep amenities with an assigned group
+    amenities['group'] = amenities['amenity'].str.lower().map(amenity_to_group)
+    amenities_to_plot = amenities[amenities['group'].notna()]
 
-# assign icons to amenities based on their group
-icons_dictionary = {
-    'Education': ('blue', 'book'),
-    'Food & Drink': ('lightgray', 'cutlery'),
-    'Groceries': ('gray', 'shopping-cart'),
-    'Postal': ('pink', 'envelope'),
-    'Banking': ('red', 'credit-card'),
-    'Religion': ('orange', 'star'),
-    'Entertainment': ('purple', 'film'),
-    'Healthcare': ('lightgreen', 'medkit'),
-    'Public Services': ('lightblue', 'globe'),
-    'Public Transport': ('black', 'bus'),
-    'Dedicated Greenspaces': ('green', 'tree')
-}
+    # assign icons to amenities based on their group
+    icons_dictionary = {
+        'Education': ('blue', 'book'),
+        'Food & Drink': ('lightgray', 'cutlery'),
+        'Groceries': ('gray', 'shopping-cart'),
+        'Postal': ('pink', 'envelope'),
+        'Banking': ('red', 'credit-card'),
+        'Religion': ('orange', 'star'),
+        'Entertainment': ('purple', 'film'),
+        'Healthcare': ('lightgreen', 'medkit'),
+        'Public Services': ('lightblue', 'globe'),
+        'Public Transport': ('black', 'bus'),
+        'Dedicated Greenspaces': ('green', 'tree')
+    }
 
-# ask if user wants an interactive map if the building count is less than
-if building_count > folium_threshold:
-    print('Dataset too large for an interactive map.')
-    create_static_map(buildings, edges, selection)
+    # have the user select a timeframe
+    selection = get_timeframe()
 
-else:
-    while True:
-        folium_choice = input('Would you like to create an interactive map? (yes/no): ').strip().lower()
+    # ask if user wants an interactive map if the building count is less than
+    if building_count > folium_threshold:
+        print('Dataset too large for an interactive map.')
+        create_static_map(buildings, edges, selection)
 
-        # act on decision
-        if folium_choice in ['y', 'yes']:
-            print('User wants an interactive map.')
-            create_interactive_map(buildings, amenities_to_plot, edges, selection, icons_dictionary)
-            break
-        elif folium_choice in ['n', 'no']:
-            print('User DOES NOT want an interactive map.')
-            create_static_map(buildings, edges, selection)
-            break
-        else:
-            print("Invalid Input. Please type 'yes' or 'no'.")
-            continue
+    else:
+        while True:
+            folium_choice = input('Would you like to create an interactive map? (yes/no): ').strip().lower()
+
+            # act on decision
+            if folium_choice in ['y', 'yes']:
+                print('User wants an interactive map.')
+                create_interactive_map(subfolder, buildings, amenities_to_plot, edges, selection, icons_dictionary)
+                break
+            elif folium_choice in ['n', 'no']:
+                print('User DOES NOT want an interactive map.')
+                create_static_map(subfolder, buildings, edges, selection)
+                break
+            else:
+                print("Invalid Input. Please type 'yes' or 'no'.")
+                continue
