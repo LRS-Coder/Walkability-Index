@@ -15,7 +15,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # import local modules
 from config import amenity_groups, folium_threshold
-from transform import select_subfolder
 
 # define function for adding amenity markers to a folium map as groups
 def add_amenity_markers(row, amenity_groups, icons_dictionary):
