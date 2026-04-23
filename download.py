@@ -237,7 +237,7 @@ def download_all(location, boundary, folder="data"):
 def download_confirm():
     """
     Confirm a geographic boundary and download data from the boundary if confirmed.
-    
+
     Prompt user to define a geographic boundary to download data within.
     Display boundary and request confirm that it is correct.
     Call download_all function to download the data within the boundary.

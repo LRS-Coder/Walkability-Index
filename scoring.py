@@ -6,30 +6,46 @@ from config import amenity_groups
 
 # define function to count how many distinct items are present
 def count_present(counts, items):
+    """Count the number of distinct items present in the items list."""
     return sum(1 for i in items if counts.get(i, 0) > 0)
 
 # define function which return the weight of the amenity with the highest weight
 def weighted_max(counts, weights):
+    """Return the highest weight among the items present in the items dictionary."""
     return max((w for k, w in weights.items() if counts.get(k, 0) > 0), default=0)
 
 # define function which checks if any item in a list is present
 def has_any(counts, items):
+    """Return true if any item is present in the items list."""
     return any(counts.get(i, 0) > 0 for i in items)
 
 # define function to constrain a value between two bounds
 def clamp(x, lo=0, hi=1):
+    """Clamp the value between an upper and lower bounds."""
     return max(lo, min(hi, x))
 
 # define function to apply diminishing return the greater a value is
 def saturate(x, k=2):
+    """Apply diminishing returns so values approach 1 asymptotically."""
     return 1 - math.exp(-x / k)
 
 # define function which computes a diversity score by using the saturate function on the count_present function
 def by_diversity(counts, items, k):
+    """Compute a diversity score using diminishing returns on distinct items."""
     return clamp(saturate(count_present(counts, items), k))
+
+"""
+All scoring functions take a dictionary mapping of amenity names to counts (dict[str,int]) and return a score between 0 and 1.
+"""
 
 # define function for calculating a score for education
 def score_education(c):
+    """
+    Compute an education score.
+
+    Schools contribute 0.5 for every school.
+    Every other education facility contributes exactly 0.25 if any of that education facility are present.
+    """
 
     # special case of school can be counted multiple times
     score = 0.5 * c.get('school', 0)
@@ -65,6 +81,14 @@ water = {
 
 # define function for calculating a score for food and drink
 def score_food(c):
+    """
+    Compute a food and drink score.
+
+    Food and drink venues (e.g. restaurant, cafe) contribute towards the score for every venue present.
+    Single item venues (e.g. ice_cream, vending_machine) contribute towards the score at most once each.
+    Water amenities (e.g. water_point, drinking_water) are considered the same amenity.
+    Scores are saturated such that 5 food and drink venues give a score of 0.92.
+    """
 
     # add score for each count of place in multi food
     score = sum(c.get(k,0) for k in multi_food)
@@ -87,6 +111,12 @@ grocery_weights = {
 
 # define function for calculating a score for groceries based on highest weighted grocery amenity
 def score_groceries(c):
+    """
+    Compute a grocery score.
+
+    Scores are equal to the weight of the largest market.
+    """
+
     return weighted_max(c, grocery_weights)
 
 # define weights for each postal place people care about
@@ -97,10 +127,24 @@ postal_weights = {
 
 # define function for calculating a score for postal based on highest weighted postal amenity
 def score_postal(c):
+    """
+    Compute a postal score.
+
+    Scores are equal to the weight of the most valuable postal service amenity.
+    """
+
     return weighted_max(c, postal_weights)
 
 # define function for calculating a score for banking
 def score_banking(c):
+    """
+    Compute a banking score.
+
+    The maximum score of 1 is achieved if a bank is present.
+    An atm provides 0.8 score, and every other banking amenity provides 0.1 score per unique amenity type present.
+    The score is clamped between 0 and 1.
+    """
+
     # bank dominates everything
     if c.get("bank", 0) > 0:
         return 1.0
@@ -129,14 +173,36 @@ religion_weights = {
 
 # define function for calculating a score for religion based on highest weighted religion amenity
 def score_religion(c):
+    """
+    Compute a religion score.
+
+    Scores are equal to the weight of the most valuable religious amenity.
+    """
+
     return weighted_max(c, religion_weights)
 
 # define function for calculating a score for entertainment based on the diversity of entertainment amenities rounded to 2 decimal places
 def score_entertainment(c):
+    """
+    Compute an entertainment score.
+
+    Each unique entertainment amenity present contributes towards the score.
+    Scores are saturated such that 5 unique entertainment amenities give a score of 0.81.
+    """
+
     return round(by_diversity(c, amenity_groups['Entertainment'], k=3), 2)
 
 # define function for calculating a score for healthcare
 def score_healthcare(c):
+    """
+    Compute a healthcare score.
+
+    Core facilities (e.g. hospital, doctors) contribute to 0.7 of the score.
+    Support facilities (e.g. pharmacy, dentist) contribute to 0.3 of the score.
+    A hospital provides the maximum core score, clinic and doctors can be combined for a greater score.
+    The maximum support score is achieved if both a pharmacy and dentist are present.
+    """
+
     # define whether clinic and doctors within walking distance
     has_clinic = c.get('clinic', 0) > 0
     has_doctors = c.get('doctors', 0) > 0
@@ -159,6 +225,13 @@ def score_healthcare(c):
 
 # define function for calculating a score for public services
 def score_public_services(c):
+    """
+    Compute a public services score.
+
+    Each type of public service contributes once to the score with fire_station and police being most valuable.
+    A ranger_station can serve in place of the police amenity if one is not present but provides a lower score.
+    """
+
     score = 0.45 * (c.get('fire_station', 0) > 0)
 
     # ranger station serves as a less effective police station if none present
@@ -176,6 +249,14 @@ def score_public_services(c):
 
 # define function for calculating a score for public transport
 def score_transport(c):
+    """
+    Compute a public transport score.
+
+    A train_and_bus_station or separate train_station and bus_station provide the maximum transport score of 1.
+    Bus and train amenities are equal in value.
+    A bus_stop can provide some score in place of a bust_station.
+    Non-bus and train amenities provide a smaller additional score meaning the maximum score can be achieved without a bus_station.
+    """
 
     # a combination of a bus and train station dominates everything
     if c.get("train_and_bus_station", 0) > 0:
@@ -202,6 +283,13 @@ def score_transport(c):
 
 # define function for calculating a score for greenspaces based on the diversity of greenspace amenities rounded to 2 decimal places
 def score_greenspace(c):
+    """
+    Compute a greenspace score.
+
+    Each unique greenspace amenity present contributes towards the score.
+    Scores are saturated such that 5 unique greenspace amenities give a score of 0.92.
+    """
+
     return round(by_diversity(c, amenity_groups['Dedicated Greenspaces'], k=2), 2)
 
 # define methods scorer will use to calculate scores per type
