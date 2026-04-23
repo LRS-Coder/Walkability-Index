@@ -13,6 +13,24 @@ from shapely.geometry import Point, box
 
 # define function for assigning a prefix to ids
 def prefix_ids(df, prefix):
+    """
+    Add an 'id' column by prefixing the DataFrame index.
+
+    Parameters
+    ----------
+
+    df : pandas.DataFrame
+        the DataFrame whose index will be used to generate IDs.
+
+    prefix : str
+        the string to prefix the ids with.
+
+    Returns
+    -------
+
+    df : pandas.DataFrame
+        the updated DataFrame with an 'id' column containing prefixes.
+    """
 
     # create a copy of the dataframe
     df = df.copy()
@@ -23,6 +41,27 @@ def prefix_ids(df, prefix):
 
 # define function for creating a circular polygon around a point using local UTM projection
 def create_circle_polygon(lat, lon, radius_km):
+    """
+    Create a circular polygon around a point using local UTM projection.
+
+    Parameters
+    ----------
+
+    lat : float
+        latitude of the point (EPSG:4326).
+
+    lon : float
+        longitude of the point (EPSG:4326).
+
+    radius_km : float
+        desired radius of the circle in km.
+
+    Returns
+    -------
+
+    circle_polygon : shapely.geometry.Polygon
+        circular polygon centred about the input point (EPSG:4326).
+    """
 
     # determine local UTM CRS
     utm_crs = pyproj.CRS.from_proj4(f"+proj=utm +zone={int((lon+180)/6)+1} +datum=WGS84 +units=m +no_defs ")
@@ -34,6 +73,22 @@ def create_circle_polygon(lat, lon, radius_km):
 
 # define function for assigning amenity to supermarkets based on size
 def assign_supermarket_amenity(size_band):
+    """
+    Map supermarkets to specific amenities based on their size.
+
+    Parameters
+    ----------
+
+    size_band : str
+        size band description from Geolytix Retail Points.
+
+    Returns
+    -------
+
+    str
+        name of the amenity based on the size (e.g. 'large_supermarket', 'hypermarket').
+    """
+
     if '< 3,013 ft2' in size_band:
         return 'small_supermarket'
     elif '3,013 < 15,069 ft2' in size_band:
@@ -45,6 +100,32 @@ def assign_supermarket_amenity(size_band):
 
 # define function for downloading all required data from OpenStreetMap, and local data files
 def download_all(location, boundary, folder="data"):
+    """
+    Download and process spatial data for a given boundary.
+
+    Retrieves amenities, buildings, and walking network data from OpenStreetMap through download.
+    Combines with UK Retail Points and Open Bank Branches data from Geolytix stored locally.
+    Combines with Northern Ireland Bus Stop and Station data from Translink stored locally.
+    Saves combined dataset to a subfolder with the name of the location.
+
+    Parameters
+    ----------
+
+    location : str
+        name of the location (used for subfolder naming).
+
+    boundary : shapely.geometry.Polygon
+        geographic boundary to download data from within.
+
+    folder : str, default 'data'
+        root directory to store files once downloaded.
+
+    Returns
+    -------
+
+    subfolder : str
+        exact path to the location where the data was saved to.
+    """
 
     # formats the location name for use a folder name
     location_folder_name = location.title()
@@ -154,6 +235,17 @@ def download_all(location, boundary, folder="data"):
 
 # define function for ensuring location is giving the correct boundary
 def download_confirm():
+    """
+    Prompt user to define a geographic boundary to download data within.
+    Display boundary and request confirm that it is correct.
+    Call download_all function to download the data within the boundary.
+
+    Returns
+    -------
+
+    subfolder : str
+        exact path to the location where the data was saved to if download occurred, otherwise None.
+    """
 
     # user inputs locations until satisfied with the boundary they would be downloading
     while True:
