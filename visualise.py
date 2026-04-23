@@ -80,7 +80,7 @@ def add_walkability_buildings(buildings, scores, m, t=15):
     return m
 
 # define function to create a box style scale bar for static maps
-def add_scalebar(ax, length, n=4, location=(0.6,0.03)):
+def add_scalebar(ax, n=4, location=(0.6,0.03)):
 
     # define axis limits in projected coordinates
     xlim = ax.get_xlim()
@@ -114,11 +114,17 @@ def add_scalebar(ax, length, n=4, location=(0.6,0.03)):
     seg = length / n
     h = map_height * 0.02
 
+    # define padding extent beyond scale bar
+    pad_x_left = seg * 0.25
+    pad_x_right = seg * 1.5
+    pad_y_top = h * 0.25
+    pad_y_bottom = h * 2
+
     # add padding around scale bar to aid readability
     ax.add_patch(Rectangle(
-        (x0 - seg * 0.3, y0 - h * 1.5),
-        length + seg * 0.6,
-        h * 2.5,
+        (x0 - pad_x_left, y0 - pad_y_bottom),
+        length + pad_x_left + pad_x_right,
+        h + pad_y_top + pad_y_bottom,
         facecolor='white',
         edgecolor='none',
         alpha=0.8
@@ -298,7 +304,7 @@ def create_static_map(subfolder, buildings, edges, selection):
     )
 
     # add scale bar to the map
-    add_scalebar(ax, length=((xmax - xmin)/4))
+    add_scalebar(ax)
 
     # label axes
     ax.set_xlabel('ITM Easting (m)')
