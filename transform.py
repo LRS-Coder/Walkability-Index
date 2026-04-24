@@ -23,6 +23,24 @@ valid_amenities = config.valid_amenities
 
 # define function to cover Counter() string into a dictionary
 def counter_parser(s):
+    """
+    Parse a Counter object into a dictionary.
+
+    Convert string representation of collections.Counter object (e.g. "Counter({'bus_stop': 6, 'restaurant': 2, 'fast_food': 2, 'place_of_worship': 2})") to a dictionary.
+
+    Parameters
+    ----------
+
+    s : str, dict, or NaN
+        stored Counter value, read from csv.
+
+    Returns
+    -------
+
+    dict
+        dictionary mapping amenities to their counts for a given walking distance to a node.
+        returns nothing if parameter s was empty or parsing fails.
+    """
 
     # check if empty return empty if so
     if pd.isna(s):
@@ -65,6 +83,22 @@ def counter_parser(s):
 
 # define function to ensure all ids are lists which can later be exploded
 def id_parser(d):
+    """
+    Ensure building IDs are returned as a list.
+
+    Parameters
+    ----------
+
+    d : str, list, int, or NaN
+        building ID(s) closest to the node.
+
+    Returns
+    -------
+
+    list
+        list of building ID(s) closest to the node.
+        returns nothing if parameter d was empty.
+    """
 
     # check if id is missing (should not be the case) and return nothing if the case
     if pd.isna(d):
@@ -81,6 +115,26 @@ def id_parser(d):
 
 # define function to count the total amenities across all reachable nodes
 def count_amenities(nodes, amenity_index):
+    """
+    Combine amenity counts from multiple nodes into a single Counter representing total accessible amenities from a node.
+
+    Parameters
+    ----------
+
+    nodes : iterable
+        collection of node ID(s).
+
+    amenity_index : dict[int, collections.Counter]
+        mapping of node IDs to counts of amenities by type of amenity.
+
+    Returns
+    -------
+
+    counts : collections.Counter
+        combined counts of amenities reachable from a given node.
+    """
+
+    # set counts as a Counter object
     counts = Counter()
 
     # look up distances per node
@@ -90,6 +144,35 @@ def count_amenities(nodes, amenity_index):
 
 # define function for counting amenities within 15min, 30min, and 60min walking distances and write to a file
 def building_access(access_path, amenities_path, buildings_path, network_path):
+    """
+    Compute walking accessibility to amenities for each building.
+
+    Calculates the number of amenities within a 15, 30, and 60 minute walk of the closest node to a building.
+    Snaps buildings to their nearest network node introduces some spatial inaccuracies but improves performance.
+    Dijkstra's algorithm is used to find the shortest path along the network between nodes.
+    The walking speed is set in the config.
+    Results are saved to a csv file.
+
+    Parameters
+    ----------
+
+    access_path : str
+        output path for the csv file where the accessibility data is saved.
+
+    amenities_path : str
+        path to the GeoJSON file containing the amenity data.
+
+    buildings_path : str
+        path to the GeoJSON file containing the building data.
+
+    network_path : str
+        path to the GraphML file containing the network data.
+
+    Returns
+    -------
+
+    None
+    """
 
     # check if an access file already exists and ask user if they want to use it or overwrite it
     if os.path.exists(access_path):
@@ -165,6 +248,22 @@ def building_access(access_path, amenities_path, buildings_path, network_path):
 
 # define function for calculating the score for in every scoring category for every walking distance of interest
 def score_row(row):
+    """
+    Calculate the score for a single building using all scoring methods for 15, 30, and 60 minute walking distances.
+
+    Parameters
+    ----------
+
+    row : pandas.Series
+        row containing amenity counts for '15min', '30min', and '60min' walking distances.
+
+    Returns
+    -------
+
+    dict
+        nested dictionary structured as: {distance: {category: score}}.
+    """
+
     return {
         '15': {k: f(row['15min']) for k, f in scorer_methods.items()},
         '30': {k: f(row['30min']) for k, f in scorer_methods.items()},
@@ -173,10 +272,46 @@ def score_row(row):
 
 # define function for calculating the overall score by weighting and summing all categories (creates a weighted score out of 100 to 2 decimal places)
 def main_score(s, d):
+    """
+    Calculate a weighted overall score for each building using their scores for each category of amenities for 15, 30, and 60 minute walking distances.
+
+    Parameters
+    ----------
+
+    s : dict
+        nested score directory created from the 'score_row' function.
+
+    d : str
+        distance key ('15', '30', or '60').
+
+    Returns
+    -------
+
+    float
+        weighted score between 0 and 100.
+    """
+
     return round(sum(s[d][k] * weights[k] for k in weights) / total_weights * 100, 2)
 
 # define function to flatten nested score dictionaries into a tabular form all scores for a building including group and overall scores
 def flatten_scores(s):
+    """
+    Flatten nested score dictionaries into a tabular format.
+
+    Parameters
+    ----------
+
+    s : dict
+        nested score directory created from the 'score_row' function.
+
+    Returns
+    -------
+
+    dict
+        flattened dictionary with keys structured as: '15 Postal', '30 Banking', etc.
+    """
+
+    # define output as an empty dictionary
     output = {}
 
     # flatten scores for each group at 15min, 30min, 60min walking distances
@@ -190,6 +325,31 @@ def flatten_scores(s):
 
 # define function for calculating the individual and overall scores for every walking distance of interest and add to the dataframe
 def apply_scoring(access_path, buildings_path, output_path):
+    """
+    Apply scoring logic to accessibility data and export results.
+
+    Parses stored Counter objects from csv.
+    Expands rows where buildings shared the same closest node.
+    Computes category and overall scores for 15, 30, and 60 minute walking distances.
+    Adds scores to the buildings data and stores as a GeoJSON.
+
+    Parameters
+    ----------
+
+    access_path : str
+        path to the csv file containing the accessibility data.
+
+    buildings_path : str
+        path to the GeoJSON file containing the building data.
+
+    output_path : str
+        output path for the GeoJSON file where the scored buildings data is saved.
+
+    Returns
+    -------
+
+    None
+    """
 
     # read data files
     access = pd.read_csv(access_path)
@@ -224,6 +384,16 @@ def apply_scoring(access_path, buildings_path, output_path):
 
 # define function for selecting a subfolder from all subfolders in data/
 def select_subfolder():
+    """
+    Display all folders within the data folder and return the path of the subfolder selected by the user.
+
+    Returns
+    -------
+
+    subfolder : str
+        path to the subfolder where all data for the location of interest is stored.
+    """
+
     # define a list of the subfolders in data only including subfolders not the .csv data
     subfolders = [
         name for name in os.listdir('data') if os.path.isdir(os.path.join('data', name))
@@ -256,6 +426,24 @@ def select_subfolder():
 
 # define function for running the transform pipeline
 def run_transform(subfolder):
+    """
+    Run the accessibility calculations and apply scoring to the data in the inputted subfolder.
+
+    Define input and output file paths based on the subfolder.
+    Compute walking accessibility to amenities for each building and save the output to a csv using the 'building_access' function.
+    Apply scoring logic to accessibility data and export results as a GeoJSON using the 'apppy_scoring' function.
+
+    Parameters
+    ----------
+
+    subfolder : str
+        path to the subfolder where all data for the location of interest is stored.
+
+    Returns
+    -------
+
+    None
+    """
 
     # define paths to read data files
     amenities_path = os.path.join(subfolder, 'amenities.geojson')
