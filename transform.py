@@ -21,7 +21,7 @@ total_weights = sum(weights.values())
 walking_speed = config.walking_speed
 valid_amenities = config.valid_amenities
 
-# define function to cover Counter() string into a dictionary
+# define function to convert Counter() string into a dictionary
 def counter_parser(s):
     """
     Parse a Counter object into a dictionary.
