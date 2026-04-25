@@ -1,6 +1,8 @@
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LRS-Coder/Walkability-Index/HEAD?urlpath=lab)
+
 # Walkability-Index
 
-## Install and Run Programme
+## Install and Run Programme Locally
 
 ### Clone Repository
 
@@ -21,6 +23,18 @@ conda activate walkability
 ```python
 python main.py
 ```
+
+## Run in Binder
+
+Click on the Binder at the top of the README.
+
+Once JupyterLab has loaded open the terminal.
+
+In the termninal type:
+```bash
+python main.py
+```
+**Note:** When running the programme in binder, maps will not automatically open after creation. They are saved as '.html' (interactive) or '.png' (static) files in the data folder and can be viewed by clicking on the relevant file.
 ## License
 
 [MIT](https://github.com/LRS-Coder/Walkability-Index/blob/main/LICENSE)
