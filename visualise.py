@@ -18,6 +18,30 @@ from config import amenity_groups, folium_threshold
 
 # define function for adding amenity markers to a folium map as groups
 def add_amenity_markers(row, amenity_groups, icons_dictionary):
+    """
+    Add amenity markers with their colour and icon based on the amenity's group.
+
+    Extracts coordinates from the geometry of the amenity.
+    Add the name and type of amenity to its popup.
+    Assign colour and icon of the popup based on the amenity's group.
+
+    Parameters
+    ----------
+
+    row : pandas.Series
+        row from a GeoDataFrame containing information related to its geometry, name, and type.
+
+    amenity_groups : dict
+        dictionary mapping an amenity grouping with the amenities in the group.
+
+    icons_dictionary : dict
+        dictionary mapping an amenity grouping with the colour and icon that represents the grouping.
+
+    Returns
+    -------
+
+    None
+    """
 
     # assign geometry of point, polygon, or line to geom
     geom = row.geometry
@@ -44,6 +68,35 @@ def add_amenity_markers(row, amenity_groups, icons_dictionary):
 
 # define function for adding buildings to folium map with scoring for a given distance, and colouring buildings based on overall score
 def add_walkability_buildings(buildings, scores, m, t=15):
+    """
+    Add buildings with an assigned colour based on their Walkability score for a given walking time.
+
+    Adds tooltips to the buildings providing their score breakdown.
+    Assign a colour from viridis to each building based on their Walkability score for a given walking time.
+    Add the colour bar to the folium map.
+
+    Parameters
+    ----------
+
+    buildings : geopandas.GeoDataFrame
+        GeoDataFrame containing geometries and scores for each building.
+
+    scores : list
+        list of the grouping names and 'Overall' to construct tooltips.
+
+    m : folium.Map
+        folium map the buildings are to be added to.
+
+    t : int, default 15
+        walking time threshold in minutes.
+
+    Returns
+    -------
+
+    m : folium.Map
+        updated folium map with the buildings and colour bar added.
+    """
+
     # define the name of the walkability index based on selected walking time
     walkability = f'{t} Overall'
 
@@ -81,6 +134,31 @@ def add_walkability_buildings(buildings, scores, m, t=15):
 
 # define function to create a box style scale bar for static maps
 def add_scalebar(ax, n=4, location=(0.6,0.03)):
+    """
+    Add a box style scale bar to a matplotlib axis.
+
+    Creates a segmented scale bar with alternating colours (black and white) and distance labels.
+    The scale bar is formated such that it can be in meters or kilometers.
+    The scale bar is adjusted so it represents are "nice" (e.g. 500, 1000, 2000, 5000) overall length.
+    The scale bar appears near the bottom-right of the map with the default location with a padded layer beneath.
+
+    Parameters
+    ----------
+
+    ax : matplotlib.axes.Axes
+        matplotlib axis where scale bar will be added.
+
+    n : int, default 4
+        number of segments the scale bar consists of.
+
+    location : tuple of float, default (0.6,0.03)
+        position of the scale bar relative to the map where (1,1) is the top-right corner.
+
+    Returns
+    -------
+
+    None
+    """
 
     # define axis limits in projected coordinates
     xlim = ax.get_xlim()
@@ -175,6 +253,40 @@ def add_scalebar(ax, n=4, location=(0.6,0.03)):
 
 # define function to create an interactive folium map
 def create_interactive_map(subfolder, buildings, amenities, edges, selection, icons_dictionary):
+    """
+    Create and display an interactive folium map.
+
+    Generates a folium map containing buildings coloured based on their walkability.
+    The folium map enables amenities to be toggled on and off by their category.
+    The walking network for the location can be toggled on and off.
+    User caan generate a static map from within this function if not satisfied with the interactive map.
+
+    Parameters
+    ----------
+
+    subfolder : str
+        matplotlib axis where scale bar will be added.
+
+    buildings : geopandas.GeoDataFrame
+        GeoDataFrame containing geometries and scores for each building.
+
+    amenities : geopandas.GeoDataFrame
+        GeoDataFrame containing location of amenities and their classes.
+
+    edges : geopandas.GeoDataFrame
+        GeoDataFrame representing the edges of the walking network.
+
+    selection : int
+        selected walkability threshold of 15, 30, or 60 minutes.
+
+    icons_dictionary : dict
+        dictionary mapping an amenity grouping with the colour and icon that represents the grouping.
+
+    Returns
+    -------
+
+    None
+    """
 
     # prints to let user know an interactive map is being created
     print('Creating an interactive map...')
@@ -260,6 +372,33 @@ def create_interactive_map(subfolder, buildings, amenities, edges, selection, ic
 
 # define function to create a static matplotlib map
 def create_static_map(subfolder, buildings, edges, selection):
+    """
+    Create and display a static matplotlib map.
+
+    Generates a matplotlib map containing buildings coloured based on their walkability.
+    The matplotlib map contains a scale bar, the colour bar, and labels the axis based on Irish Transverse Mercator (ITM).
+    Saves the map as a .png image.
+
+    Parameters
+    ----------
+
+    subfolder : str
+        matplotlib axis where scale bar will be added.
+
+    buildings : geopandas.GeoDataFrame
+        GeoDataFrame containing geometries and scores for each building.
+
+    edges : geopandas.GeoDataFrame
+        GeoDataFrame representing the edges of the walking network.
+
+    selection : int
+        selected walkability threshold of 15, 30, or 60 minutes.
+
+    Returns
+    -------
+
+    None
+    """
 
     # prints to let user know a static map is being created
     print('Creating a static map...')
@@ -316,6 +455,16 @@ def create_static_map(subfolder, buildings, edges, selection):
 
 # define function to select the desired walkability time (can be 15, 30, or 60)
 def get_timeframe():
+    """
+    Confirm a walkability time ensuring it is either 15, 30, or 60 minutes.
+
+    Returns
+    -------
+
+    selection : int
+        selected walkability threshold of 15, 30, or 60 minutes.
+    """
+
     while True:
         try:
 
@@ -335,6 +484,25 @@ def get_timeframe():
 
 # define function for running the visualise pipeline
 def run_visualise(subfolder):
+    """
+    Run visualise to create a static and / or interactive map.
+
+    Define input file paths based on the subfolder.
+    Have the user select a timeframe to map.
+    Allow user to select an interactive map if number of buildings is not too large to display, always allow the creation of a static map.
+
+    Parameters
+    ----------
+
+    subfolder : str
+        path to the subfolder where all data for the location of interest is stored.
+
+    Returns
+    -------
+
+    None
+    """
+
 
     # read data files
     amenities = gpd.read_file(os.path.join(subfolder, 'amenities.geojson'))
