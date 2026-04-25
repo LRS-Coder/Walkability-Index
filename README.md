@@ -21,3 +21,6 @@ conda activate walkability
 ```python
 python main.py
 ```
+## License
+
+[MIT](https://github.com/LRS-Coder/Walkability-Index/blob/main/LICENSE)
