@@ -1,6 +1,5 @@
 # import modules from standard library
 import os
-import tempfile
 import webbrowser
 
 # import modules from third-party
@@ -259,7 +258,7 @@ def create_interactive_map(subfolder, buildings, amenities, edges, selection, ic
     Generates a folium map containing buildings coloured based on their walkability.
     The folium map enables amenities to be toggled on and off by their category.
     The walking network for the location can be toggled on and off.
-    User caan generate a static map from within this function if not satisfied with the interactive map.
+    User can generate a static map from within this function if not satisfied with the interactive map.
 
     Parameters
     ----------
@@ -329,46 +328,39 @@ def create_interactive_map(subfolder, buildings, amenities, edges, selection, ic
     folium.TileLayer(tiles='CartoDB positron', name='Light Map (CartoDB)').add_to(m)
     folium.LayerControl().add_to(m)
 
-    # create a temporary file to for folium image
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.html') as tf:
-        temp_path = tf.name
-    m.save(temp_path)
+    # save and open folium map
+    file = f'{subfolder}{selection}_map.html'
+    m.save(file)
+    webbrowser.open(f'file://'+os.path.abspath(file))
 
-    # display boundary plot in browser and ask whether boundary is satisfactory
-    try:
-        webbrowser.open(f'file://{temp_path}')
-        while True:
-            satisfactory = input('Is this map satisfactory? (yes/no): ').strip().lower()
+    # ask user if they are satisfied with the map
+    while True:
+        satisfactory = input('Is this map satisfactory? (yes/no): ').strip().lower()
+
+        # exit while condition
+        if satisfactory in ['y', 'yes']:
+            print('User is satisfied with the map.')
+            break
+
+        # ask user if they would like to try running the static map function
+        elif satisfactory in ['n', 'no']:
+            try_static = input("Please type 'yes' if you would like to produce a static map: ").strip().lower()
+
+            # create a static map if user entered yes
+            if try_static in ['y', 'yes']:
+                create_static_map(subfolder, buildings, edges, selection)
+
+            # print that user does not want to create a static map if not yes
+            else:
+                print('User does not want to create a static map.')
 
             # exit while condition
-            if satisfactory in ['y', 'yes']:
-                print('User is satisfied with the map.')
-                break
+            break
 
-            # ask user if they would like to try running the static map function
-            elif satisfactory in ['n', 'no']:
-                try_static = input("Please type 'yes' if you would like to produce a static map: ").strip().lower()
-
-                # create a static map if user entered yes
-                if try_static in ['y', 'yes']:
-                    create_static_map(subfolder, buildings, edges, selection)
-
-                # print that user does not want to create a static map if not yes
-                else:
-                    print('User does not want to create a static map.')
-
-                # exit while condition
-                break
-
-            # ask question again
-            else:
-                print("Invalid Input. Please type 'yes'.")
-                continue
-
-    # delete the temporary file
-    finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        # ask question again
+        else:
+            print("Invalid Input. Please type 'yes'.")
+            continue
 
 # define function to create a static matplotlib map
 def create_static_map(subfolder, buildings, edges, selection):
