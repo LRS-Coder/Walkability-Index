@@ -26,7 +26,7 @@ python main.py
 
 ## Run in Binder
 
-Click on the Binder at the top of the README.
+Click on the Binder badge at the top of the README.
 
 Once JupyterLab has loaded open the terminal.
 
