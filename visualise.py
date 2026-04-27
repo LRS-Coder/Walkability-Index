@@ -96,9 +96,6 @@ def add_walkability_buildings(buildings, scores, m, t=15):
         updated folium map with the buildings and colour bar added.
     """
 
-    # define the name of the walkability index based on selected walking time
-    walkability = f'{t} Overall'
-
     # set the fields and aliases to be added to the building tool tip in the map
     hover_fields = [f'{t} {s}' for s in scores]
     hover_aliases = [f'{s} ({t} min)' for s in scores]
@@ -329,7 +326,7 @@ def create_interactive_map(subfolder, buildings, amenities, edges, selection, ic
     folium.LayerControl().add_to(m)
 
     # save and open folium map
-    file = f'{subfolder}{selection}_map.html'
+    file = os.path.join(subfolder,f'{selection}_map.html')
     m.save(file)
     webbrowser.open(f'file://'+os.path.abspath(file))
 
@@ -442,7 +439,7 @@ def create_static_map(subfolder, buildings, edges, selection):
     ax.set_ylabel('ITM Northing (m)')
 
     # save and display map
-    plt.savefig(f'{subfolder}{selection}_map.png', dpi=600, bbox_inches='tight')
+    plt.savefig(os.path.join(subfolder,f'{selection}_map.png'), dpi=600, bbox_inches='tight')
     plt.show()
 
 # define function to select the desired walkability time (can be 15, 30, or 60)
