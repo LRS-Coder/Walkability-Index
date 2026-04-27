@@ -13,7 +13,7 @@ while True:
     if choice == '1':
         subfolder = download_confirm()
 
-        # pass subfolder createc with download_confirm into transform and visualise
+        # pass subfolder created with download_confirm into transform and visualise
         if subfolder:
             run_transform(subfolder)
             run_visualise(subfolder)
@@ -32,7 +32,7 @@ while True:
         subfolder = select_subfolder()
         run_visualise(subfolder)
 
-    # uaer exits the main menu and the program ends
+    # user exits the main menu and the program ends
     elif choice in ['e', 'exit']:
         print('Exiting...')
         break
