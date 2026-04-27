@@ -539,7 +539,7 @@ def run_visualise(subfolder):
     # ask if user wants an interactive map if the building count is less than
     if building_count > folium_threshold:
         print('Dataset too large for an interactive map.')
-        create_static_map(buildings, edges, selection)
+        create_static_map(subfolder, buildings, edges, selection)
 
     else:
         while True:
