@@ -266,7 +266,7 @@ def download_confirm():
             continue
 
         # user inputs a location
-        location = input("Enter a location (e.g. Paris, France): ")
+        location = input("Enter a location (e.g. Belfast, Northern Ireland): ")
 
         # OpenStreetMap boundary
         if method == "1":
