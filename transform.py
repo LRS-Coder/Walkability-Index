@@ -455,5 +455,11 @@ def run_transform(subfolder):
     output_path = os.path.join(subfolder,'buildings_scored.geojson')
 
     # run scoring access and scoring function and save results to csv
-    building_access(access_path, amenities_path, buildings_path, network_path)
-    apply_scoring(access_path, buildings_path, output_path)
+    try:
+        building_access(access_path, amenities_path, buildings_path, network_path)
+        apply_scoring(access_path, buildings_path, output_path)
+
+    # if data does not exist exit the function
+    except Exception:
+        print('Data does not exist, ensure the data is downloaded.')
+        return None

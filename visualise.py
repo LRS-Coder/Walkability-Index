@@ -497,10 +497,16 @@ def run_visualise(subfolder):
 
 
     # read data files
-    amenities = gpd.read_file(os.path.join(subfolder, 'amenities.geojson'))
-    buildings = gpd.read_file(os.path.join(subfolder, 'buildings_scored.geojson'))
-    network = ox.load_graphml(os.path.join(subfolder, 'network.graphml'))
-    edges = ox.graph_to_gdfs(network)[1]
+    try:
+        amenities = gpd.read_file(os.path.join(subfolder, 'amenities.geojson'))
+        buildings = gpd.read_file(os.path.join(subfolder, 'buildings_scored.geojson'))
+        network = ox.load_graphml(os.path.join(subfolder, 'network.graphml'))
+        edges = ox.graph_to_gdfs(network)[1]
+
+    # if data does not exist exit the function
+    except Exception:
+        print('Data does not exist, ensure the data is downloaded and transformed.')
+        return None
 
     # count the number of buildings in the file
     building_count = len(buildings)
