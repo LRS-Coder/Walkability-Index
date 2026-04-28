@@ -4,6 +4,10 @@
 
 ## Install and Run Program Locally
 
+### Install Git and Anaconda 
+
+In order to download and run the program locally, `git` and `conda` must be installed on your computer. Instructions for installing git can be found [here](https://git-scm.com/downloads), and instructions for installing Anaconda can be found [here](https://docs.anaconda.com/anaconda/install/).
+
 ### Clone Repository
 
 ```python
