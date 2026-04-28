@@ -2,7 +2,7 @@
 
 # Walkability-Index
 
-## Install and Run Programme Locally
+## Install and Run Program Locally
 
 ### Clone Repository
 
@@ -18,7 +18,7 @@ conda env create -f environment.yml
 conda activate walkability
 ```
 
-### Run Programme
+### Run Program
 
 ```python
 python main.py
@@ -34,7 +34,7 @@ In the termninal type:
 ```bash
 python main.py
 ```
-**Note:** When running the programme in binder, maps will not automatically open after creation. They are saved as '.html' (interactive) or '.png' (static) files in the data folder and can be viewed by clicking on the relevant file.
+**Note:** When running the program in binder, maps will not automatically open after creation. They are saved as '.html' (interactive) or '.png' (static) files in the data folder and can be viewed by clicking on the relevant file.
 ## License
 
 [MIT](https://github.com/LRS-Coder/Walkability-Index/blob/main/LICENSE)
