@@ -34,7 +34,7 @@ Click on the Binder badge at the top of the README.
 
 Once JupyterLab has loaded open the terminal.
 
-In the termninal type:
+In the terminal type:
 ```bash
 python main.py
 ```
