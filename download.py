@@ -314,7 +314,7 @@ def download_confirm():
         elif method == "3":
 
             # user inputs coordinates
-            coords = input("Enter the coordinates in decimal degrees as lat min, lon min, lat max, lon max (e.g. 48.73,2.13,49.02,2.58): ")
+            coords = input("Enter the coordinates in decimal degrees as lat min, lon min, lat max, lon max (e.g. 54.53,-6.04,54.66,-5.81): ")
 
             try:
                 # convert users input into floating point coordinates
